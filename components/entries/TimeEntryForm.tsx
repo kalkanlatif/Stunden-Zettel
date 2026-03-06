@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Plus, Save, AlertTriangle } from 'lucide-react';
+import { Plus, Save, AlertTriangle, CalendarDays, Coffee } from 'lucide-react';
 import { TimeBlock } from '@/types';
 import { TimeBlockInput } from './TimeBlockInput';
 import { calculateTotalHours, hasOverlap, formatHours } from '@/lib/utils/time';
@@ -107,24 +107,27 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
   return (
     <Card className="border-0 shadow-sm">
       <CardContent className="p-5">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-neutral-400">Arbeitszeit eintragen</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="work-date" className="text-xs text-neutral-500">Arbeitstag</Label>
-            <Input
-              id="work-date"
-              type="date"
-              value={workDate}
-              onChange={(e) => setWorkDate(e.target.value)}
-              className="mt-1 w-full sm:w-48"
-            />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Date */}
+          <div className="flex items-center gap-3 rounded-xl bg-neutral-50 px-3 py-2.5">
+            <CalendarDays className="h-4 w-4 shrink-0 text-amber-500" />
+            <div className="flex-1">
+              <span className="block text-[10px] font-medium uppercase text-neutral-400">Arbeitstag</span>
+              <Input
+                type="date"
+                value={workDate}
+                onChange={(e) => setWorkDate(e.target.value)}
+                className="h-8 border-0 bg-transparent px-0 text-sm font-medium shadow-none focus-visible:ring-0"
+              />
+            </div>
           </div>
 
+          {/* Time blocks */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs text-neutral-500">Arbeitszeit (Von – Bis)</Label>
+            <div className="flex items-center justify-between px-1">
+              <Label className="text-[10px] font-medium uppercase text-neutral-400">Arbeitszeit</Label>
               {timeBlocks.length > 1 && (
-                <span className="text-[10px] text-neutral-400">
+                <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-500">
                   {timeBlocks.length} Schichten
                 </span>
               )}
@@ -140,60 +143,65 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
               />
             ))}
             {timeBlocks.length < MAX_TIME_BLOCKS && (
-              <Button type="button" variant="outline" size="sm" onClick={addBlock} className="text-xs">
-                <Plus className="mr-1 h-3.5 w-3.5" />
-                Weitere Schicht hinzufügen
-              </Button>
+              <button
+                type="button"
+                onClick={addBlock}
+                className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-neutral-200 py-2 text-[11px] font-medium text-neutral-400 transition-colors hover:border-amber-300 hover:text-amber-600"
+              >
+                <Plus className="h-3 w-3" />
+                Weitere Schicht
+              </button>
             )}
-            <p className="text-[10px] text-neutral-400">
-              Falls du an einem Tag mehrere Schichten gearbeitet hast, kannst du weitere hinzufügen.
-            </p>
           </div>
 
-          <div>
-            <Label htmlFor="break" className="text-xs text-neutral-500">Pause (Minuten)</Label>
-            <Input
-              id="break"
-              type="number"
-              min={0}
-              max={120}
-              value={breakMinutes}
-              onChange={(e) => setBreakMinutes(Math.max(0, parseInt(e.target.value) || 0))}
-              className="mt-1 w-full sm:w-32"
-            />
-          </div>
-
-          {/* Total hours */}
-          <div className="flex items-center justify-between rounded-xl bg-amber-400/10 px-4 py-3">
-            <span className="text-sm text-neutral-600">Gesamt</span>
-            <span className="text-xl font-bold text-neutral-900">
-              {formatHours(totalHours)}
-            </span>
+          {/* Break + Total row */}
+          <div className="flex gap-3">
+            <div className="flex flex-1 items-center gap-2.5 rounded-xl bg-neutral-50 px-3 py-2.5">
+              <Coffee className="h-4 w-4 shrink-0 text-neutral-300" />
+              <div className="flex-1">
+                <span className="block text-[10px] font-medium uppercase text-neutral-400">Pause</span>
+                <div className="flex items-center gap-1">
+                  <Input
+                    type="number"
+                    min={0}
+                    max={120}
+                    value={breakMinutes}
+                    onChange={(e) => setBreakMinutes(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="h-7 w-14 border-0 bg-transparent px-0 text-sm font-medium shadow-none focus-visible:ring-0"
+                  />
+                  <span className="text-[11px] text-neutral-400">Min.</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-1 items-center justify-between rounded-xl bg-amber-400/15 px-4 py-2.5">
+              <span className="text-[10px] font-medium uppercase text-amber-700">Gesamt</span>
+              <span className="text-lg font-bold text-neutral-900">
+                {formatHours(totalHours)}
+              </span>
+            </div>
           </div>
 
           {totalHours > MAX_HOURS_PER_DAY && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
+            <Alert variant="destructive" className="py-2">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              <AlertDescription className="text-xs">
                 Max. {MAX_HOURS_PER_DAY} Stunden pro Tag (ArbZG §3)
               </AlertDescription>
             </Alert>
           )}
 
-          <div>
-            <Label htmlFor="notes" className="text-xs text-neutral-500">Bemerkung (optional)</Label>
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              maxLength={500}
-              placeholder="z.B. Veranstaltung, Krankheitsvertretung..."
-              rows={2}
-              className="mt-1"
-            />
-          </div>
+          {/* Notes */}
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            maxLength={500}
+            placeholder="Bemerkung (optional)"
+            rows={2}
+            className="resize-none rounded-xl border-neutral-200 bg-neutral-50 text-sm placeholder:text-neutral-300"
+          />
 
-          <Button type="submit" disabled={saving} className="w-full bg-neutral-900 text-white hover:bg-neutral-800">
+          {/* Submit */}
+          <Button type="submit" disabled={saving} className="w-full rounded-xl bg-neutral-900 py-5 text-sm font-semibold text-white hover:bg-neutral-800">
             <Save className="mr-2 h-4 w-4" />
             {saving ? 'Wird gespeichert...' : 'Speichern'}
           </Button>

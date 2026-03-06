@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Clock, Settings } from 'lucide-react';
+import { Clock, ShieldCheck } from 'lucide-react';
 
 export function Header() {
   return (
@@ -15,9 +15,10 @@ export function Header() {
         </Link>
         <Link
           href="/admin"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
+          className="flex items-center gap-1.5 rounded-lg bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-400 transition-colors hover:bg-neutral-700 hover:text-white"
         >
-          <Settings className="h-4 w-4" />
+          <ShieldCheck className="h-3.5 w-3.5" />
+          Admin
         </Link>
       </div>
     </header>

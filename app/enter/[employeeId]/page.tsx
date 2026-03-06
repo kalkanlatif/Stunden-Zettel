@@ -41,7 +41,6 @@ export default function EnterTimePage() {
   };
 
   const goToNextMonth = () => {
-    if (isCurrentMonth) return;
     if (viewMonth === 12) {
       setViewMonth(1);
       setViewYear(viewYear + 1);
@@ -85,7 +84,7 @@ export default function EnterTimePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-2xl space-y-5">
       {/* Header */}
       <div>
         <Link href="/" className="mb-3 inline-flex items-center gap-1 text-sm text-neutral-400 hover:text-neutral-600">
@@ -93,12 +92,12 @@ export default function EnterTimePage() {
           Zurück
         </Link>
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400 text-sm font-bold text-neutral-900">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400 text-sm font-bold text-neutral-900">
             {employee.first_name[0]}{employee.last_name[0]}
           </div>
           <div>
             <h1 className="text-lg font-bold text-neutral-900">
-              Hallo, {employee.first_name}!
+              {employee.first_name} {employee.last_name}
             </h1>
             <Badge className={`text-[11px] ${EMPLOYMENT_BADGE_COLORS[employee.employment_type]}`}>
               {employee.employment_type}
@@ -111,19 +110,18 @@ export default function EnterTimePage() {
       <TimeEntryForm employeeId={employeeId} onSaved={refresh} />
 
       {/* Month navigation */}
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={goToPrevMonth} className="text-neutral-500 hover:text-neutral-700">
+      <div className="flex items-center justify-between rounded-xl bg-neutral-900 px-4 py-2.5">
+        <Button variant="ghost" size="icon" onClick={goToPrevMonth} className="h-8 w-8 text-neutral-400 hover:bg-neutral-800 hover:text-white">
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="text-sm font-semibold text-neutral-700">
+        <span className="text-sm font-semibold text-white">
           {getMonthName(viewMonth)} {viewYear}
         </span>
         <Button
           variant="ghost"
-          size="sm"
+          size="icon"
           onClick={goToNextMonth}
-          disabled={isCurrentMonth}
-          className="text-neutral-500 hover:text-neutral-700"
+          className="h-8 w-8 text-neutral-400 hover:bg-neutral-800 hover:text-white"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>

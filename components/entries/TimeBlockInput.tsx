@@ -1,10 +1,10 @@
 'use client';
 
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, ArrowRight } from 'lucide-react';
 import { TimeBlock } from '@/types';
 import { calculateHours, formatHours } from '@/lib/utils/time';
+import { TimePicker } from './TimePicker';
 
 interface Props {
   index: number;
@@ -20,40 +20,34 @@ export function TimeBlockInput({ index, block, onChange, onRemove, canRemove }: 
     : 0;
 
   return (
-    <div className="flex items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-      <div className="flex-1">
-        <span className="mb-1 block text-[10px] uppercase text-neutral-400">Von</span>
-        <Input
-          type="time"
+    <div className="flex items-center gap-2">
+      <div className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-neutral-50 px-3 py-1.5">
+        <TimePicker
           value={block.start}
-          onChange={(e) => onChange(index, { ...block, start: e.target.value })}
-          className="h-9 bg-white text-sm"
+          onChange={(v) => onChange(index, { ...block, start: v })}
+          placeholder="Von"
         />
-      </div>
-      <div className="flex-1">
-        <span className="mb-1 block text-[10px] uppercase text-neutral-400">Bis</span>
-        <Input
-          type="time"
+        <ArrowRight className="h-3 w-3 shrink-0 text-neutral-300" />
+        <TimePicker
           value={block.end}
-          onChange={(e) => onChange(index, { ...block, end: e.target.value })}
-          className="h-9 bg-white text-sm"
+          onChange={(v) => onChange(index, { ...block, end: v })}
+          placeholder="Bis"
         />
       </div>
-      <div className="w-16 text-center">
-        <span className="mb-1 block text-[10px] uppercase text-neutral-400">Std.</span>
-        <p className="text-sm font-semibold text-neutral-700">
-          {hours > 0 ? formatHours(hours) : '-'}
-        </p>
-      </div>
+      {hours > 0 && (
+        <span className="min-w-[3.5rem] rounded-lg bg-amber-400/15 px-2 py-1.5 text-center text-xs font-bold text-amber-700">
+          {formatHours(hours)}
+        </span>
+      )}
       {canRemove && (
         <Button
           type="button"
           variant="ghost"
           size="icon"
           onClick={() => onRemove(index)}
-          className="mt-3 h-8 w-8 text-neutral-400 hover:text-red-500"
+          className="h-8 w-8 shrink-0 text-neutral-300 hover:text-red-500"
         >
-          <X className="h-4 w-4" />
+          <X className="h-3.5 w-3.5" />
         </Button>
       )}
     </div>
