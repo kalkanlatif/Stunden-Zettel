@@ -7,13 +7,13 @@ export default function HomePage() {
   const { employees, loading } = useEmployees();
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1e3a5f]">
-          Mitarbeiter auswählen
+    <div className="mx-auto max-w-2xl">
+      <div className="mb-8 text-center">
+        <h1 className="text-xl font-bold text-neutral-900">
+          Wer bist du?
         </h1>
-        <p className="text-gray-500">
-          Wähle deinen Namen, um deine Arbeitszeiten einzutragen.
+        <p className="mt-1 text-sm text-neutral-400">
+          Wähle deinen Namen, um deine Stunden einzutragen.
         </p>
       </div>
       <EmployeeList employees={employees} loading={loading} />

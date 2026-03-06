@@ -60,17 +60,6 @@ export async function POST(request: NextRequest) {
 
     const entry = result.data;
 
-    // Check future date
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const workDate = new Date(entry.work_date);
-    if (workDate > today) {
-      return NextResponse.json(
-        { error: 'Arbeitstag darf nicht in der Zukunft liegen' },
-        { status: 400 }
-      );
-    }
-
     // Check overlapping blocks
     if (hasOverlap(entry.time_blocks)) {
       return NextResponse.json(
@@ -103,12 +92,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      if (error.code === '23505') {
-        return NextResponse.json(
-          { error: 'Für diesen Tag existiert bereits ein Eintrag' },
-          { status: 409 }
-        );
-      }
       return NextResponse.json(
         { error: 'Fehler beim Speichern des Eintrags' },
         { status: 500 }

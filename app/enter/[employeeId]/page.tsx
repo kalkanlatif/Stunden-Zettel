@@ -1,15 +1,18 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSingleEmployee } from '@/hooks/useEmployees';
 import { useEntries } from '@/hooks/useEntries';
 import { TimeEntryForm } from '@/components/entries/TimeEntryForm';
 import { MonthlyOverview } from '@/components/entries/MonthlyOverview';
 import { EMPLOYMENT_BADGE_COLORS } from '@/lib/constants';
+import { getMonthName } from '@/lib/utils/time';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function EnterTimePage() {
   const params = useParams();
@@ -17,38 +20,64 @@ export default function EnterTimePage() {
   const { employee, loading: empLoading } = useSingleEmployee(employeeId);
 
   const now = new Date();
+  const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
+  const [viewYear, setViewYear] = useState(now.getFullYear());
+
   const { entries, loading: entriesLoading, refresh } = useEntries({
     employeeId,
-    month: now.getMonth() + 1,
-    year: now.getFullYear(),
+    month: viewMonth,
+    year: viewYear,
   });
 
-  // Count missing days (5-7 days ago without entry)
-  const recordedDates = entries.map((e) => e.work_date);
+  const isCurrentMonth = viewMonth === now.getMonth() + 1 && viewYear === now.getFullYear();
+
+  const goToPrevMonth = () => {
+    if (viewMonth === 1) {
+      setViewMonth(12);
+      setViewYear(viewYear - 1);
+    } else {
+      setViewMonth(viewMonth - 1);
+    }
+  };
+
+  const goToNextMonth = () => {
+    if (isCurrentMonth) return;
+    if (viewMonth === 12) {
+      setViewMonth(1);
+      setViewYear(viewYear + 1);
+    } else {
+      setViewMonth(viewMonth + 1);
+    }
+  };
+
+  // Count missing days (5-7 days ago without entry) — only for current month
   let missingDays = 0;
-  for (let i = 5; i <= 7; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-    if (!recordedDates.includes(dateStr)) {
-      missingDays++;
+  if (isCurrentMonth) {
+    const recordedDates = entries.map((e) => e.work_date);
+    for (let i = 5; i <= 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      if (!recordedDates.includes(dateStr)) {
+        missingDays++;
+      }
     }
   }
 
   if (empLoading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-96 w-full" />
+      <div className="mx-auto max-w-2xl space-y-4">
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-96 w-full rounded-xl" />
       </div>
     );
   }
 
   if (!employee) {
     return (
-      <div className="py-16 text-center">
-        <p className="text-lg text-gray-500">Mitarbeiter nicht gefunden.</p>
-        <Link href="/" className="mt-4 inline-block text-[#1e3a5f] underline">
+      <div className="py-20 text-center">
+        <p className="text-neutral-400">Mitarbeiter nicht gefunden.</p>
+        <Link href="/" className="mt-3 inline-block text-sm text-amber-600 underline">
           Zurück zur Startseite
         </Link>
       </div>
@@ -56,23 +85,49 @@ export default function EnterTimePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6">
       {/* Header */}
       <div>
-        <Link href="/" className="mb-2 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
-          <ArrowLeft className="h-4 w-4" />
+        <Link href="/" className="mb-3 inline-flex items-center gap-1 text-sm text-neutral-400 hover:text-neutral-600">
+          <ArrowLeft className="h-3.5 w-3.5" />
           Zurück
         </Link>
-        <h1 className="text-2xl font-bold text-[#1e3a5f]">
-          Guten Tag, {employee.first_name}!
-        </h1>
-        <Badge className={EMPLOYMENT_BADGE_COLORS[employee.employment_type]}>
-          {employee.employment_type}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400 text-sm font-bold text-neutral-900">
+            {employee.first_name[0]}{employee.last_name[0]}
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-neutral-900">
+              Hallo, {employee.first_name}!
+            </h1>
+            <Badge className={`text-[11px] ${EMPLOYMENT_BADGE_COLORS[employee.employment_type]}`}>
+              {employee.employment_type}
+            </Badge>
+          </div>
+        </div>
       </div>
 
       {/* Form */}
       <TimeEntryForm employeeId={employeeId} onSaved={refresh} />
+
+      {/* Month navigation */}
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" onClick={goToPrevMonth} className="text-neutral-500 hover:text-neutral-700">
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="text-sm font-semibold text-neutral-700">
+          {getMonthName(viewMonth)} {viewYear}
+        </span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={goToNextMonth}
+          disabled={isCurrentMonth}
+          className="text-neutral-500 hover:text-neutral-700"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
 
       {/* Monthly overview */}
       <MonthlyOverview

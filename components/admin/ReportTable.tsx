@@ -35,7 +35,7 @@ export function ReportTable({ report, month, year }: Props) {
 
   if (report.length === 0) {
     return (
-      <p className="py-8 text-center text-gray-500">
+      <p className="py-8 text-center text-neutral-400">
         Keine Einträge für den gewählten Zeitraum.
       </p>
     );
@@ -47,11 +47,11 @@ export function ReportTable({ report, month, year }: Props) {
         <div key={r.employee.id} className="rounded-lg border">
           {/* Summary row */}
           <div
-            className="flex cursor-pointer items-center justify-between p-4 hover:bg-gray-50"
+            className="flex cursor-pointer items-center justify-between p-4 hover:bg-neutral-50"
             onClick={() => toggleExpand(r.employee.id)}
           >
             <div className="flex items-center gap-3">
-              <span className="text-gray-400">
+              <span className="text-neutral-300">
                 {expanded.has(r.employee.id) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
               </span>
               <div>
@@ -65,8 +65,8 @@ export function ReportTable({ report, month, year }: Props) {
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm text-gray-500">{r.workDays} Arbeitstage</p>
-                <p className="font-bold text-[#1e3a5f]">{formatHours(r.totalHours)}</p>
+                <p className="text-sm text-neutral-400">{r.workDays} Arbeitstage</p>
+                <p className="font-bold text-neutral-900">{formatHours(r.totalHours)}</p>
               </div>
               <Button
                 variant="outline"

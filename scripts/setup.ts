@@ -50,10 +50,13 @@ async function main() {
 
   if (ADD_TEST_DATA) {
     const testEmployees = [
-      { first_name: 'Ali', last_name: 'Kalkan', employment_type: 'Vollzeit' },
-      { first_name: 'Mehmet', last_name: 'Yilmaz', employment_type: 'Teilzeit' },
-      { first_name: 'Sarah', last_name: 'Mueller', employment_type: 'Minijob' },
-      { first_name: 'Lukas', last_name: 'Schmidt', employment_type: 'Aushilfe' },
+      { first_name: 'Miran', last_name: 'Kalkan', employment_type: 'Vollzeit' },
+      { first_name: 'Melek Eylül', last_name: 'Kalkan', employment_type: 'Teilzeit' },
+      { first_name: 'Eymen', last_name: 'Kalkan', employment_type: 'Minijob' },
+      { first_name: 'Salihcan', last_name: 'Kalkan', employment_type: 'Aushilfe' },
+      { first_name: 'Yusuf', last_name: 'Bilgin', employment_type: 'Vollzeit' },
+      { first_name: 'Diyar', last_name: 'Bilgin', employment_type: 'Teilzeit' },
+      { first_name: 'Baran', last_name: 'Kalkan', employment_type: 'Minijob' },
     ];
 
     const { error: insertError } = await supabase.from('employees').upsert(

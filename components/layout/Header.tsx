@@ -1,23 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import { Clock, Lock } from 'lucide-react';
-import { APP_NAME } from '@/lib/constants';
+import { Clock, Settings } from 'lucide-react';
 
 export function Header() {
   return (
-    <header className="border-b bg-[#1e3a5f] text-white">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2">
-          <Clock className="h-6 w-6 text-amber-400" />
-          <span className="text-lg font-bold">{APP_NAME}</span>
+    <header className="bg-neutral-900 text-white">
+      <div className="container mx-auto flex h-14 items-center justify-between px-4">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400">
+            <Clock className="h-4 w-4 text-neutral-900" />
+          </div>
+          <span className="text-sm font-semibold tracking-wide uppercase">Stundenzettel</span>
         </Link>
         <Link
           href="/admin"
-          className="flex items-center gap-1 rounded-md px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
         >
-          <Lock className="h-4 w-4" />
-          <span className="hidden sm:inline">Admin</span>
+          <Settings className="h-4 w-4" />
         </Link>
       </div>
     </header>

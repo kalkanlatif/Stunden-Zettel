@@ -6,67 +6,62 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useAdminStore } from '@/store/admin.store';
-import { DEFAULT_ADMIN_PIN } from '@/lib/constants';
+import { Employee } from '@/types';
 
 interface Props {
+  employee: Employee | null;
   open: boolean;
+  onClose: () => void;
 }
 
-export function AdminPinDialog({ open }: Props) {
-  const [pin, setPin] = useState('');
+export function EmployeePinDialog({ employee, open, onClose }: Props) {
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { authenticate } = useAdminStore();
   const router = useRouter();
+
+  if (!employee) return null;
+
+  // Password = first name in lowercase
+  const expectedPassword = employee.first_name.toLowerCase();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin === DEFAULT_ADMIN_PIN) {
-      authenticate();
-      setPin('');
+    if (password.toLowerCase().trim() === expectedPassword) {
+      setPassword('');
       setError('');
+      onClose();
+      router.push(`/enter/${employee.id}`);
     } else {
-      setError('Falsche PIN');
-      setPin('');
+      setError('Falsches Passwort');
+      setPassword('');
     }
   };
 
-  const handleClose = () => {
-    setPin('');
-    setError('');
-    router.push('/');
-  };
-
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) { onClose(); setPassword(''); setError(''); } }}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Admin-Zugang</DialogTitle>
+          <DialogTitle>Hallo, {employee.first_name}!</DialogTitle>
           <DialogDescription>
-            Bitte gib die Admin-PIN ein.
+            Bitte gib dein Passwort ein, um fortzufahren.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="pin" className="text-xs text-neutral-500">PIN</Label>
+            <Label htmlFor="emp-password">Passwort</Label>
             <Input
-              id="pin"
+              id="emp-password"
               type="password"
-              inputMode="numeric"
-              maxLength={4}
-              value={pin}
-              onChange={(e) => {
-                setPin(e.target.value.replace(/\D/g, ''));
-                setError('');
-              }}
-              placeholder="4-stellige PIN"
+              value={password}
+              onChange={(e) => { setPassword(e.target.value); setError(''); }}
+              placeholder="Dein Passwort eingeben"
               autoFocus
-              className="mt-1"
+              autoComplete="off"
             />
             {error && <p className="mt-1.5 text-sm text-red-500">{error}</p>}
           </div>
           <Button type="submit" className="w-full bg-neutral-900 text-white hover:bg-neutral-800">
-            Anmelden
+            Weiter
           </Button>
         </form>
       </DialogContent>

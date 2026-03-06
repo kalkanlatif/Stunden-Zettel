@@ -2,8 +2,7 @@
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Trash2 } from 'lucide-react';
+import { X } from 'lucide-react';
 import { TimeBlock } from '@/types';
 import { calculateHours, formatHours } from '@/lib/utils/time';
 
@@ -21,28 +20,28 @@ export function TimeBlockInput({ index, block, onChange, onRemove, canRemove }: 
     : 0;
 
   return (
-    <div className="flex items-end gap-2 rounded-lg border bg-gray-50 p-3">
+    <div className="flex items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
       <div className="flex-1">
-        <Label className="text-xs text-gray-500">Von</Label>
+        <span className="mb-1 block text-[10px] uppercase text-neutral-400">Von</span>
         <Input
           type="time"
           value={block.start}
           onChange={(e) => onChange(index, { ...block, start: e.target.value })}
-          className="bg-white"
+          className="h-9 bg-white text-sm"
         />
       </div>
       <div className="flex-1">
-        <Label className="text-xs text-gray-500">Bis</Label>
+        <span className="mb-1 block text-[10px] uppercase text-neutral-400">Bis</span>
         <Input
           type="time"
           value={block.end}
           onChange={(e) => onChange(index, { ...block, end: e.target.value })}
-          className="bg-white"
+          className="h-9 bg-white text-sm"
         />
       </div>
-      <div className="w-20 text-center">
-        <Label className="text-xs text-gray-500">Stunden</Label>
-        <p className="py-2 text-sm font-medium">
+      <div className="w-16 text-center">
+        <span className="mb-1 block text-[10px] uppercase text-neutral-400">Std.</span>
+        <p className="text-sm font-semibold text-neutral-700">
           {hours > 0 ? formatHours(hours) : '-'}
         </p>
       </div>
@@ -52,9 +51,9 @@ export function TimeBlockInput({ index, block, onChange, onRemove, canRemove }: 
           variant="ghost"
           size="icon"
           onClick={() => onRemove(index)}
-          className="text-red-500 hover:text-red-700"
+          className="mt-3 h-8 w-8 text-neutral-400 hover:text-red-500"
         >
-          <Trash2 className="h-4 w-4" />
+          <X className="h-4 w-4" />
         </Button>
       )}
     </div>

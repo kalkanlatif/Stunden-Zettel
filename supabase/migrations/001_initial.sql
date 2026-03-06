@@ -73,7 +73,8 @@ VALUES ('admin_pin_hash', 'PLACEHOLDER_SET_BY_APP');
 -- ============================================================
 CREATE INDEX idx_time_entries_employee ON time_entries(employee_id);
 CREATE INDEX idx_time_entries_date ON time_entries(work_date);
-CREATE INDEX idx_time_entries_month ON time_entries(DATE_TRUNC('month', work_date));
+-- Use a simple composite index instead (DATE_TRUNC is not IMMUTABLE)
+CREATE INDEX idx_time_entries_year_month ON time_entries(EXTRACT(YEAR FROM work_date), EXTRACT(MONTH FROM work_date));
 CREATE INDEX idx_employees_active ON employees(active);
 
 -- ============================================================
