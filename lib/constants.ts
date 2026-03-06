@@ -19,5 +19,16 @@ export const MAX_HOURS_PER_DAY = 10;
 // Max time blocks per day
 export const MAX_TIME_BLOCKS = 6;
 
+// Absence types
+export const ABSENCE_TYPES = ['Urlaub', 'Krank', 'Feiertag', 'Unbezahlter Urlaub', 'Sonstiges'] as const;
+
+export const ABSENCE_BADGE_COLORS: Record<string, string> = {
+  Urlaub: 'bg-blue-50 text-blue-700',
+  Krank: 'bg-red-50 text-red-700',
+  Feiertag: 'bg-green-50 text-green-700',
+  'Unbezahlter Urlaub': 'bg-orange-50 text-orange-700',
+  Sonstiges: 'bg-neutral-100 text-neutral-600',
+};
+
 // Default admin PIN
 export const DEFAULT_ADMIN_PIN = '1234';

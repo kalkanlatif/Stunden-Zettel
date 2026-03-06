@@ -42,6 +42,18 @@ export interface MonthlyReport {
   total_break_minutes: number;
 }
 
+export type AbsenceType = 'Urlaub' | 'Krank' | 'Feiertag' | 'Unbezahlter Urlaub' | 'Sonstiges';
+
+export interface Absence {
+  id: string;
+  employee_id: string;
+  absence_date: string; // Format: "YYYY-MM-DD"
+  absence_type: AbsenceType;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ApiResponse<T> {
   data: T;
   error?: string;

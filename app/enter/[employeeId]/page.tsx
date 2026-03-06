@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSingleEmployee } from '@/hooks/useEmployees';
 import { useEntries } from '@/hooks/useEntries';
+import { useAbsences } from '@/hooks/useAbsences';
 import { TimeEntryForm } from '@/components/entries/TimeEntryForm';
 import { MonthlyOverview } from '@/components/entries/MonthlyOverview';
+import { AbsenceForm } from '@/components/entries/AbsenceForm';
 import { EMPLOYMENT_BADGE_COLORS } from '@/lib/constants';
 import { getMonthName } from '@/lib/utils/time';
 import Link from 'next/link';
@@ -24,6 +26,12 @@ export default function EnterTimePage() {
   const [viewYear, setViewYear] = useState(now.getFullYear());
 
   const { entries, loading: entriesLoading, refresh } = useEntries({
+    employeeId,
+    month: viewMonth,
+    year: viewYear,
+  });
+
+  const { absences, refresh: refreshAbsences } = useAbsences({
     employeeId,
     month: viewMonth,
     year: viewYear,
@@ -108,6 +116,9 @@ export default function EnterTimePage() {
 
       {/* Form */}
       <TimeEntryForm employeeId={employeeId} onSaved={refresh} />
+
+      {/* Absence form */}
+      <AbsenceForm employeeId={employeeId} absences={absences} onSaved={refreshAbsences} />
 
       {/* Month navigation */}
       <div className="flex items-center justify-between rounded-xl bg-neutral-900 px-4 py-2.5">

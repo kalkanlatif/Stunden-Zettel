@@ -7,12 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, BarChart3, LogOut, LayoutDashboard, CalendarDays, ClipboardList } from 'lucide-react';
+import { Users, BarChart3, LogOut, LayoutDashboard, CalendarDays, ClipboardList, CalendarOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdminPinDialog } from '@/components/admin/AdminPinDialog';
 import { EmployeeTable } from '@/components/admin/EmployeeTable';
 import { ReportTable } from '@/components/admin/ReportTable';
 import { EntryManager } from '@/components/admin/EntryManager';
+import { AbsenceManager } from '@/components/admin/AbsenceManager';
 import { useAdminStore } from '@/store/admin.store';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useEntries } from '@/hooks/useEntries';
@@ -59,7 +60,7 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="dashboard" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="dashboard" className="gap-1.5 text-xs sm:text-sm">
             <LayoutDashboard className="h-4 w-4" />
             <span className="hidden sm:inline">Dashboard</span>
@@ -71,6 +72,10 @@ export default function AdminPage() {
           <TabsTrigger value="entries" className="gap-1.5 text-xs sm:text-sm">
             <ClipboardList className="h-4 w-4" />
             <span className="hidden sm:inline">Einträge</span>
+          </TabsTrigger>
+          <TabsTrigger value="absences" className="gap-1.5 text-xs sm:text-sm">
+            <CalendarOff className="h-4 w-4" />
+            <span className="hidden sm:inline">Abwesenheit</span>
           </TabsTrigger>
           <TabsTrigger value="reports" className="gap-1.5 text-xs sm:text-sm">
             <BarChart3 className="h-4 w-4" />
@@ -177,6 +182,11 @@ export default function AdminPage() {
         {/* Entries Tab */}
         <TabsContent value="entries">
           <EntryManager employees={employees} />
+        </TabsContent>
+
+        {/* Absences Tab */}
+        <TabsContent value="absences">
+          <AbsenceManager employees={employees} />
         </TabsContent>
 
         {/* Reports Tab */}

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase/server';
 import ReactPDF from '@react-pdf/renderer';
 import { StundenzettelPDF } from '@/components/pdf/StundenzettelPDF';
-import { Employee, TimeEntry } from '@/types';
+import { Employee, TimeEntry, Absence } from '@/types';
 import { BUSINESS_NAME } from '@/lib/constants';
 import { getMonthName } from '@/lib/utils/time';
 import React from 'react';
@@ -56,12 +56,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Load absences
+    const { data: absences } = await supabaseAdmin
+      .from('absences')
+      .select('*')
+      .eq('employee_id', employeeId)
+      .gte('absence_date', startDate)
+      .lt('absence_date', endDate)
+      .order('absence_date', { ascending: true });
+
     const period = `${getMonthName(parseInt(month))} ${year}`;
 
     // Generate PDF
     const pdfElement = React.createElement(StundenzettelPDF, {
       employee: employee as Employee,
       entries: (entries || []) as TimeEntry[],
+      absences: (absences || []) as Absence[],
       period,
       businessName: BUSINESS_NAME,
     });
