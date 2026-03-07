@@ -24,6 +24,7 @@ export function EmployeeTable({ employees, onRefresh }: Props) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [employmentType, setEmploymentType] = useState<EmploymentType>('Minijob');
+  const [empPassword, setEmpPassword] = useState('');
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
@@ -32,6 +33,7 @@ export function EmployeeTable({ employees, onRefresh }: Props) {
     setFirstName('');
     setLastName('');
     setEmploymentType('Minijob');
+    setEmpPassword('');
     setDialogOpen(true);
   };
 
@@ -40,6 +42,7 @@ export function EmployeeTable({ employees, onRefresh }: Props) {
     setFirstName(emp.first_name);
     setLastName(emp.last_name);
     setEmploymentType(emp.employment_type);
+    setEmpPassword(emp.password || '');
     setDialogOpen(true);
   };
 
@@ -61,6 +64,7 @@ export function EmployeeTable({ employees, onRefresh }: Props) {
           first_name: firstName,
           last_name: lastName,
           employment_type: employmentType,
+          ...(empPassword ? { password: empPassword } : {}),
         }),
       });
 
@@ -106,6 +110,7 @@ export function EmployeeTable({ employees, onRefresh }: Props) {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Passwort</TableHead>
               <TableHead>Beschäftigung</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Aktionen</TableHead>
@@ -117,6 +122,7 @@ export function EmployeeTable({ employees, onRefresh }: Props) {
                 <TableCell className="font-medium">
                   {emp.first_name} {emp.last_name}
                 </TableCell>
+                <TableCell className="text-sm text-neutral-500">{emp.password}</TableCell>
                 <TableCell>
                   <Badge className={EMPLOYMENT_BADGE_COLORS[emp.employment_type]}>
                     {emp.employment_type}
@@ -172,6 +178,14 @@ export function EmployeeTable({ employees, onRefresh }: Props) {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label>Passwort</Label>
+              <Input
+                value={empPassword}
+                onChange={(e) => setEmpPassword(e.target.value)}
+                placeholder={editing ? 'Leer lassen = unverändert' : 'Leer = Vorname kleingeschrieben'}
+              />
             </div>
             <Button onClick={handleSave} disabled={saving} className="w-full bg-neutral-900 text-white hover:bg-neutral-800">
               {saving ? 'Wird gespeichert...' : 'Speichern'}

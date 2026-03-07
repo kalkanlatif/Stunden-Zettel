@@ -17,23 +17,36 @@ interface Props {
 export function EmployeePinDialog({ employee, open, onClose }: Props) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   if (!employee) return null;
 
-  // Password = first name in lowercase
-  const expectedPassword = employee.first_name.toLowerCase();
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.toLowerCase().trim() === expectedPassword) {
-      setPassword('');
-      setError('');
-      onClose();
-      router.push(`/enter/${employee.id}`);
-    } else {
-      setError('Falsches Passwort');
-      setPassword('');
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/employees/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ employee_id: employee.id, password }),
+      });
+
+      if (res.ok) {
+        setPassword('');
+        setError('');
+        onClose();
+        router.push(`/enter/${employee.id}`);
+      } else {
+        setError('Falsches Passwort');
+        setPassword('');
+      }
+    } catch {
+      setError('Verbindung fehlgeschlagen');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,8 +73,8 @@ export function EmployeePinDialog({ employee, open, onClose }: Props) {
             />
             {error && <p className="mt-1.5 text-sm text-red-500">{error}</p>}
           </div>
-          <Button type="submit" className="w-full bg-neutral-900 text-white hover:bg-neutral-800">
-            Weiter
+          <Button type="submit" disabled={loading} className="w-full bg-neutral-900 text-white hover:bg-neutral-800">
+            {loading ? 'Wird geprüft...' : 'Weiter'}
           </Button>
         </form>
       </DialogContent>

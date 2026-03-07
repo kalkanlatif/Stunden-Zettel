@@ -5,6 +5,7 @@ export interface Employee {
   first_name: string;
   last_name: string;
   employment_type: EmploymentType;
+  password: string;
   active: boolean;
   created_at: string;
   updated_at: string;
