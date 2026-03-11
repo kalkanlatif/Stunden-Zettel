@@ -3,16 +3,19 @@
 import { useRouter } from 'next/navigation';
 import { EmployeeCard } from './EmployeeCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Employee } from '@/types';
+import { Employee, Absence } from '@/types';
 import { UserX } from 'lucide-react';
 
 interface Props {
   employees: Employee[];
   loading: boolean;
+  todayAbsences?: Absence[];
 }
 
-export function EmployeeList({ employees, loading }: Props) {
+export function EmployeeList({ employees, loading, todayAbsences = [] }: Props) {
   const router = useRouter();
+
+  const absenceByEmployee = new Map(todayAbsences.map((a) => [a.employee_id, a]));
 
   const handleCardClick = (employee: Employee) => {
     router.push(`/enter/${employee.id}`);
@@ -41,7 +44,12 @@ export function EmployeeList({ employees, loading }: Props) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
       {employees.map((emp) => (
-        <EmployeeCard key={emp.id} employee={emp} onClick={handleCardClick} />
+        <EmployeeCard
+          key={emp.id}
+          employee={emp}
+          onClick={handleCardClick}
+          absence={absenceByEmployee.get(emp.id) ?? null}
+        />
       ))}
     </div>
   );

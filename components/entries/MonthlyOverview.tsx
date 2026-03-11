@@ -5,12 +5,40 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { TimeEntry } from '@/types';
-import { formatDate, getWeekday, formatTimeBlocks, formatHours } from '@/lib/utils/time';
+import { formatDate, getWeekday, formatHours, calculatePauses, formatMinutes } from '@/lib/utils/time';
 
 interface Props {
   entries: TimeEntry[];
   loading: boolean;
   missingDays?: number;
+}
+
+function TimeBlocksWithPauses({ entry }: { entry: TimeEntry }) {
+  const sorted = [...entry.time_blocks].sort((a, b) => a.start.localeCompare(b.start));
+  const pauses = calculatePauses(entry.time_blocks);
+
+  if (sorted.length <= 1) {
+    return (
+      <p className="mt-0.5 text-xs text-neutral-500">
+        {sorted[0] ? `${sorted[0].start}–${sorted[0].end}` : ''}
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+      {sorted.map((block, i) => (
+        <span key={i} className="flex items-center gap-1.5">
+          <span className="text-xs text-neutral-500">{block.start}–{block.end}</span>
+          {i < sorted.length - 1 && pauses[i] && (
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+              ☕ {formatMinutes(pauses[i].minutes)}
+            </span>
+          )}
+        </span>
+      ))}
+    </div>
+  );
 }
 
 export function MonthlyOverview({ entries, loading, missingDays = 0 }: Props) {
@@ -44,12 +72,12 @@ export function MonthlyOverview({ entries, loading, missingDays = 0 }: Props) {
           <div className="space-y-1.5">
             {sorted.map((entry) => (
               <div key={entry.id} className="flex items-center justify-between rounded-xl bg-neutral-50 px-3 py-2.5">
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-neutral-900">{formatDate(entry.work_date)}</span>
                     <span className="text-[11px] text-neutral-400">{getWeekday(entry.work_date)}</span>
                   </div>
-                  <p className="mt-0.5 text-xs text-neutral-500">{formatTimeBlocks(entry.time_blocks)}</p>
+                  <TimeBlocksWithPauses entry={entry} />
                 </div>
                 <span className="ml-3 shrink-0 rounded-lg bg-white px-2.5 py-1 text-sm font-bold text-neutral-900 shadow-sm">
                   {formatHours(Number(entry.total_hours))}

@@ -1,10 +1,14 @@
 'use client';
 
 import { useEmployees } from '@/hooks/useEmployees';
+import { useAbsences } from '@/hooks/useAbsences';
 import { EmployeeList } from '@/components/employees/EmployeeList';
+import { format } from 'date-fns';
 
 export default function HomePage() {
   const { employees, loading } = useEmployees();
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const { absences: todayAbsences } = useAbsences({ date: today });
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -16,7 +20,7 @@ export default function HomePage() {
           Wähle deinen Namen, um deine Stunden einzutragen.
         </p>
       </div>
-      <EmployeeList employees={employees} loading={loading} />
+      <EmployeeList employees={employees} loading={loading} todayAbsences={todayAbsences} />
     </div>
   );
 }

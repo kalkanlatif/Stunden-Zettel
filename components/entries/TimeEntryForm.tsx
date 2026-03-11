@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Plus, Save, AlertTriangle, CalendarDays, Coffee } from 'lucide-react';
 import { TimeBlock } from '@/types';
 import { TimeBlockInput } from './TimeBlockInput';
-import { calculateTotalHours, hasOverlap, formatHours } from '@/lib/utils/time';
+import { calculateTotalHours, hasOverlap, formatHours, calculatePauses, formatMinutes } from '@/lib/utils/time';
 import { MAX_TIME_BLOCKS, MAX_HOURS_PER_DAY } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -24,15 +24,14 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
   const today = format(new Date(), 'yyyy-MM-dd');
   const [workDate, setWorkDate] = useState(today);
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([{ start: '', end: '' }]);
-  const [breakMinutes, setBreakMinutes] = useState(0);
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
-  const totalHours = calculateTotalHours(
-    timeBlocks.filter((b) => b.start && b.end && b.end > b.start),
-    breakMinutes
-  );
+  const validBlocks = timeBlocks.filter((b) => b.start && b.end && b.end > b.start);
+  const pauses = calculatePauses(validBlocks);
+  const totalBreakMinutes = pauses.reduce((sum, p) => sum + p.minutes, 0);
+  const totalHours = calculateTotalHours(validBlocks, totalBreakMinutes);
 
   const handleBlockChange = (index: number, block: TimeBlock) => {
     const updated = [...timeBlocks];
@@ -79,7 +78,7 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
           employee_id: employeeId,
           work_date: workDate,
           time_blocks: validBlocks,
-          break_minutes: breakMinutes,
+          break_minutes: totalBreakMinutes,
           notes: notes || undefined,
         }),
       });
@@ -94,7 +93,6 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
       toast({ title: 'Gespeichert', description: 'Arbeitszeit wurde erfolgreich eingetragen.' });
 
       setTimeBlocks([{ start: '', end: '' }]);
-      setBreakMinutes(0);
       setNotes('');
       onSaved();
     } catch {
@@ -154,23 +152,26 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
             )}
           </div>
 
-          {/* Break + Total row */}
+          {/* Pause (auto-calculated) + Total */}
           <div className="flex gap-3">
-            <div className="flex flex-1 items-center gap-2.5 rounded-xl bg-neutral-50 px-3 py-2.5">
-              <Coffee className="h-4 w-4 shrink-0 text-neutral-300" />
-              <div className="flex-1">
-                <span className="block text-[10px] font-medium uppercase text-neutral-400">Pause</span>
-                <div className="flex items-center gap-1">
-                  <Input
-                    type="number"
-                    min={0}
-                    max={120}
-                    value={breakMinutes}
-                    onChange={(e) => setBreakMinutes(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="h-7 w-14 border-0 bg-transparent px-0 text-sm font-medium shadow-none focus-visible:ring-0"
-                  />
-                  <span className="text-[11px] text-neutral-400">Min.</span>
-                </div>
+            <div className="flex flex-1 items-start gap-2.5 rounded-xl bg-neutral-50 px-3 py-2.5">
+              <Coffee className="mt-0.5 h-4 w-4 shrink-0 text-neutral-300" />
+              <div className="flex-1 min-w-0">
+                <span className="block text-[10px] font-medium uppercase text-neutral-400">Pause (auto)</span>
+                {pauses.length === 0 ? (
+                  <span className="text-xs text-neutral-400">Keine Pause</span>
+                ) : (
+                  <div className="mt-0.5 space-y-0.5">
+                    {pauses.map((p, i) => (
+                      <div key={i} className="flex items-center gap-1.5 text-xs">
+                        <span className="text-neutral-500">{p.start}–{p.end}</span>
+                        <span className="rounded-full bg-amber-400/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                          {formatMinutes(p.minutes)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex flex-1 items-center justify-between rounded-xl bg-amber-400/15 px-4 py-2.5">
