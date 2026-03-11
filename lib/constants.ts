@@ -29,6 +29,3 @@ export const ABSENCE_BADGE_COLORS: Record<string, string> = {
   'Unbezahlter Urlaub': 'bg-orange-50 text-orange-700',
   Sonstiges: 'bg-neutral-100 text-neutral-600',
 };
-
-// Default admin PIN
-export const DEFAULT_ADMIN_PIN = '1234';

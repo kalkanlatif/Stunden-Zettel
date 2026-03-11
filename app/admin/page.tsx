@@ -1,20 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, BarChart3, LogOut, LayoutDashboard, CalendarDays, ClipboardList, CalendarOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { AdminPinDialog } from '@/components/admin/AdminPinDialog';
+import { Users, BarChart3, LayoutDashboard, CalendarDays, ClipboardList, CalendarOff } from 'lucide-react';
 import { EmployeeTable } from '@/components/admin/EmployeeTable';
 import { ReportTable } from '@/components/admin/ReportTable';
 import { EntryManager } from '@/components/admin/EntryManager';
 import { AbsenceManager } from '@/components/admin/AbsenceManager';
-import { useAdminStore } from '@/store/admin.store';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useEntries } from '@/hooks/useEntries';
 import { useMonthlyReport } from '@/hooks/useMonthlyReport';
@@ -23,8 +19,6 @@ import { EMPLOYMENT_BADGE_COLORS } from '@/lib/constants';
 import { Badge } from '@/components/ui/badge';
 
 export default function AdminPage() {
-  const router = useRouter();
-  const { isAuthenticated, checkSession, logout } = useAdminStore();
   const { employees, loading: empLoading, refresh: refreshEmployees } = useEmployees(true);
   const now = new Date();
   const { entries } = useEntries({ month: now.getMonth() + 1, year: now.getFullYear() });
@@ -32,14 +26,6 @@ export default function AdminPage() {
   const [reportMonth, setReportMonth] = useState(now.getMonth() + 1);
   const [reportYear, setReportYear] = useState(now.getFullYear());
   const { report, loading: reportLoading } = useMonthlyReport(reportMonth, reportYear);
-
-  useEffect(() => {
-    checkSession();
-  }, [checkSession]);
-
-  if (!isAuthenticated) {
-    return <AdminPinDialog open={true} />;
-  }
 
   const activeEmployees = employees.filter((e) => e.active);
   const totalEntries = entries.length;
@@ -53,10 +39,6 @@ export default function AdminPage() {
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-neutral-900">Admin</h1>
-        <Button variant="ghost" size="sm" onClick={() => { logout(); router.push('/'); }} className="text-neutral-400 hover:text-neutral-600">
-          <LogOut className="mr-1 h-4 w-4" />
-          Abmelden
-        </Button>
       </div>
 
       <Tabs defaultValue="dashboard" className="space-y-4">
