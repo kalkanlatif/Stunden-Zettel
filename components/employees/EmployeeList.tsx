@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { EmployeeCard } from './EmployeeCard';
-import { EmployeePinDialog } from './EmployeePinDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Employee } from '@/types';
 import { UserX } from 'lucide-react';
@@ -13,12 +12,10 @@ interface Props {
 }
 
 export function EmployeeList({ employees, loading }: Props) {
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const router = useRouter();
 
   const handleCardClick = (employee: Employee) => {
-    setSelectedEmployee(employee);
-    setDialogOpen(true);
+    router.push(`/enter/${employee.id}`);
   };
 
   if (loading) {
@@ -42,18 +39,10 @@ export function EmployeeList({ employees, loading }: Props) {
   }
 
   return (
-    <>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {employees.map((emp) => (
-          <EmployeeCard key={emp.id} employee={emp} onClick={handleCardClick} />
-        ))}
-      </div>
-
-      <EmployeePinDialog
-        employee={selectedEmployee}
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-      />
-    </>
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {employees.map((emp) => (
+        <EmployeeCard key={emp.id} employee={emp} onClick={handleCardClick} />
+      ))}
+    </div>
   );
 }

@@ -46,15 +46,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const parsed = result.data as Record<string, unknown>;
-    const insertData = {
-      ...parsed,
-      password: (parsed.password as string) || result.data.first_name.toLowerCase(),
-    };
-
     const { data, error } = await supabaseAdmin
       .from('employees')
-      .insert(insertData)
+      .insert(result.data)
       .select()
       .single();
 

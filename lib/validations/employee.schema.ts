@@ -6,7 +6,6 @@ export const employeeSchema = z.object({
   employment_type: z.enum(['Minijob', 'Teilzeit', 'Vollzeit', 'Aushilfe'], {
     error: 'Bitte eine gültige Beschäftigungsart wählen',
   }),
-  password: z.string().min(1, 'Passwort ist erforderlich').max(100).optional(),
 });
 
 export type EmployeeFormData = z.infer<typeof employeeSchema>;
