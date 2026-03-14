@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const employeeId = searchParams.get('employee_id');
     const month = searchParams.get('month');
     const year = searchParams.get('year');
+    const date = searchParams.get('date');
 
     let query = supabaseAdmin
       .from('time_entries')
@@ -18,6 +19,10 @@ export async function GET(request: NextRequest) {
 
     if (employeeId) {
       query = query.eq('employee_id', employeeId);
+    }
+
+    if (date) {
+      query = query.eq('work_date', date);
     }
 
     if (month && year) {
