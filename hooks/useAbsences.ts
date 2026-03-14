@@ -7,7 +7,7 @@ interface UseAbsencesOptions {
   employeeId?: string;
   month?: number;
   year?: number;
-  date?: string;
+  date?: string; // specific date: YYYY-MM-DD
 }
 
 export function useAbsences({ employeeId, month, year, date }: UseAbsencesOptions) {
@@ -19,9 +19,12 @@ export function useAbsences({ employeeId, month, year, date }: UseAbsencesOption
     try {
       const params = new URLSearchParams();
       if (employeeId) params.set('employee_id', employeeId);
-      if (month) params.set('month', String(month));
-      if (year) params.set('year', String(year));
-      if (date) params.set('date', date);
+      if (date) {
+        params.set('date', date);
+      } else {
+        if (month) params.set('month', String(month));
+        if (year) params.set('year', String(year));
+      }
 
       const res = await fetch(`/api/absences?${params.toString()}`);
       const json = await res.json();

@@ -51,6 +51,14 @@ export function formatHours(hours: number): string {
   return `${h}:${m.toString().padStart(2, '0')} Std.`;
 }
 
+/** Format minutes for display (e.g. 45 -> "45 Min.", 90 -> "1:30 Std.") */
+export function formatMinutes(minutes: number): string {
+  if (minutes < 60) return `${minutes} Min.`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m === 0 ? `${h} Std.` : `${h}:${m.toString().padStart(2, '0')} Std.`;
+}
+
 /** Format date for display */
 export function formatDate(dateStr: string): string {
   return format(parseISO(dateStr), 'dd.MM.yyyy', { locale: de });
@@ -61,9 +69,59 @@ export function formatDateShort(dateStr: string): string {
   return format(parseISO(dateStr), 'dd.MM.', { locale: de });
 }
 
-/** Format time blocks for display: "10:00-15:00, 16:00-19:00" */
+/** Format time blocks for display: "10:00–15:00, 16:00–19:00" */
 export function formatTimeBlocks(blocks: TimeBlock[]): string {
-  return blocks.map((b) => `${b.start}-${b.end}`).join(', ');
+  return blocks.map((b) => `${b.start}–${b.end}`).join(', ');
+}
+
+export interface PauseBlock {
+  start: string; // end time of the preceding shift
+  end: string;   // start time of the next shift
+  minutes: number;
+}
+
+/** Calculate pauses (gaps) between consecutive sorted time blocks */
+export function calculatePauses(blocks: TimeBlock[]): PauseBlock[] {
+  const sorted = [...blocks]
+    .filter((b) => b.start && b.end && b.end > b.start)
+    .sort((a, b) => a.start.localeCompare(b.start));
+
+  const pauses: PauseBlock[] = [];
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const gapStart = sorted[i].end;
+    const gapEnd = sorted[i + 1].start;
+    if (gapEnd > gapStart) {
+      const [sh, sm] = gapStart.split(':').map(Number);
+      const [eh, em] = gapEnd.split(':').map(Number);
+      const minutes = (eh * 60 + em) - (sh * 60 + sm);
+      if (minutes > 0) pauses.push({ start: gapStart, end: gapEnd, minutes });
+    }
+  }
+  return pauses;
+}
+
+/** Format time blocks with pause indicators between shifts */
+export function formatTimeBlocksWithPauses(blocks: TimeBlock[]): string {
+  const sorted = [...blocks]
+    .filter((b) => b.start && b.end)
+    .sort((a, b) => a.start.localeCompare(b.start));
+
+  if (sorted.length === 0) return '';
+  if (sorted.length === 1) return `${sorted[0].start}–${sorted[0].end}`;
+
+  const parts: string[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    parts.push(`${sorted[i].start}–${sorted[i].end}`);
+    if (i < sorted.length - 1) {
+      const [sh, sm] = sorted[i].end.split(':').map(Number);
+      const [eh, em] = sorted[i + 1].start.split(':').map(Number);
+      const pauseMin = (eh * 60 + em) - (sh * 60 + sm);
+      if (pauseMin > 0) {
+        parts.push(`☕ ${formatMinutes(pauseMin)}`);
+      }
+    }
+  }
+  return parts.join(' · ');
 }
 
 /** Get German month name */

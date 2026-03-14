@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const employeeId = searchParams.get('employee_id');
     const month = searchParams.get('month');
     const year = searchParams.get('year');
-    const date = searchParams.get('date');
+    const date = searchParams.get('date'); // specific date: YYYY-MM-DD
 
     let query = supabaseAdmin
       .from('absences')
@@ -21,9 +21,7 @@ export async function GET(request: NextRequest) {
 
     if (date) {
       query = query.eq('absence_date', date);
-    }
-
-    if (month && year) {
+    } else if (month && year) {
       const startDate = `${year}-${month.padStart(2, '0')}-01`;
       const endMonth = parseInt(month) === 12 ? 1 : parseInt(month) + 1;
       const endYear = parseInt(month) === 12 ? parseInt(year) + 1 : parseInt(year);
