@@ -7,9 +7,10 @@ interface UseEntriesOptions {
   employeeId?: string;
   month?: number;
   year?: number;
+  date?: string;
 }
 
-export function useEntries({ employeeId, month, year }: UseEntriesOptions) {
+export function useEntries({ employeeId, month, year, date }: UseEntriesOptions) {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +23,7 @@ export function useEntries({ employeeId, month, year }: UseEntriesOptions) {
       if (employeeId) params.set('employee_id', employeeId);
       if (month) params.set('month', String(month));
       if (year) params.set('year', String(year));
+      if (date) params.set('date', date);
 
       const res = await fetch(`/api/entries?${params.toString()}`);
       const json = await res.json();
@@ -32,7 +34,7 @@ export function useEntries({ employeeId, month, year }: UseEntriesOptions) {
     } finally {
       setLoading(false);
     }
-  }, [employeeId, month, year]);
+  }, [employeeId, month, year, date]);
 
   useEffect(() => {
     load();

@@ -7,9 +7,10 @@ interface UseAbsencesOptions {
   employeeId?: string;
   month?: number;
   year?: number;
+  date?: string;
 }
 
-export function useAbsences({ employeeId, month, year }: UseAbsencesOptions) {
+export function useAbsences({ employeeId, month, year, date }: UseAbsencesOptions) {
   const [absences, setAbsences] = useState<Absence[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,6 +21,7 @@ export function useAbsences({ employeeId, month, year }: UseAbsencesOptions) {
       if (employeeId) params.set('employee_id', employeeId);
       if (month) params.set('month', String(month));
       if (year) params.set('year', String(year));
+      if (date) params.set('date', date);
 
       const res = await fetch(`/api/absences?${params.toString()}`);
       const json = await res.json();
@@ -30,7 +32,7 @@ export function useAbsences({ employeeId, month, year }: UseAbsencesOptions) {
     } finally {
       setLoading(false);
     }
-  }, [employeeId, month, year]);
+  }, [employeeId, month, year, date]);
 
   useEffect(() => {
     load();
