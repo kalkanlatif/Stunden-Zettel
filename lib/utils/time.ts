@@ -11,13 +11,12 @@ export function calculateHours(start: string, end: string): number {
   return Math.max(0, (endMinutes - startMinutes) / 60);
 }
 
-/** Calculate total hours for all time blocks minus break */
-export function calculateTotalHours(blocks: TimeBlock[], breakMinutes: number = 0): number {
-  const grossHours = blocks.reduce((sum, block) => {
+/** Calculate total hours for all time blocks (sum of each block's duration) */
+export function calculateTotalHours(blocks: TimeBlock[]): number {
+  const totalHours = blocks.reduce((sum, block) => {
     return sum + calculateHours(block.start, block.end);
   }, 0);
-  const netHours = grossHours - breakMinutes / 60;
-  return Math.round(Math.max(0, netHours) * 100) / 100;
+  return Math.round(Math.max(0, totalHours) * 100) / 100;
 }
 
 /** Check if time blocks overlap */

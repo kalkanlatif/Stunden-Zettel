@@ -93,7 +93,7 @@ export function EntryManager({ employees }: Props) {
       return;
     }
 
-    const totalHours = calculateTotalHours(validBlocks, editBreak);
+    const totalHours = calculateTotalHours(validBlocks);
     if (totalHours > MAX_HOURS_PER_DAY) {
       toast({ title: 'Fehler', description: `Max. ${MAX_HOURS_PER_DAY} Stunden pro Tag`, variant: 'destructive' });
       return;
@@ -223,7 +223,7 @@ export function EntryManager({ employees }: Props) {
             </SelectContent>
           </Select>
         </div>
-        <Button onClick={openNew} className="bg-neutral-900 text-white hover:bg-neutral-800">
+        <Button onClick={openNew} className="bg-amber-500 text-white hover:bg-amber-600">
           <Plus className="mr-1 h-4 w-4" />
           Eintrag
         </Button>
@@ -232,7 +232,7 @@ export function EntryManager({ employees }: Props) {
       {/* Summary */}
       <div className="flex items-center justify-between rounded-xl bg-amber-400/10 px-4 py-3">
         <span className="text-sm text-neutral-600">{entries.length} Einträge</span>
-        <span className="text-sm font-bold text-neutral-900">{formatHours(totalHours)} Std.</span>
+        <span className="text-sm font-bold text-amber-900">{formatHours(totalHours)} Std.</span>
       </div>
 
       {/* Entries */}
@@ -257,7 +257,7 @@ export function EntryManager({ employees }: Props) {
                 <TableRow key={entry.id} className="border-neutral-100">
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-400 text-[10px] font-bold text-neutral-900">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-400 text-[10px] font-bold text-amber-900">
                         {getEmployeeInitials(entry.employee_id)}
                       </div>
                       <span className="text-sm font-medium">{getEmployeeName(entry.employee_id)}</span>
@@ -383,7 +383,7 @@ export function EntryManager({ employees }: Props) {
               />
             </div>
 
-            <Button onClick={handleSave} disabled={saving} className="w-full bg-neutral-900 text-white hover:bg-neutral-800">
+            <Button onClick={handleSave} disabled={saving} className="w-full bg-amber-500 text-white hover:bg-amber-600">
               {saving ? 'Wird gespeichert...' : 'Speichern'}
             </Button>
           </div>

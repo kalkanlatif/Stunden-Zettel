@@ -6,7 +6,7 @@ export const EMPLOYMENT_TYPES = ['Minijob', 'Teilzeit', 'Vollzeit', 'Aushilfe'] 
 export const EMPLOYMENT_BADGE_COLORS: Record<string, string> = {
   Minijob: 'bg-neutral-100 text-neutral-600',
   Teilzeit: 'bg-amber-50 text-amber-700',
-  Vollzeit: 'bg-neutral-900 text-white',
+  Vollzeit: 'bg-amber-600 text-white',
   Aushilfe: 'bg-amber-400/20 text-amber-800',
 };
 
@@ -18,6 +18,11 @@ export const MAX_HOURS_PER_DAY = 10;
 
 // Max time blocks per day
 export const MAX_TIME_BLOCKS = 6;
+
+// Minijob limits (§ 8 SGB IV)
+export const MINIJOB_LIMIT_EUR = 538;
+export const MINIMUM_WAGE_EUR = 12.82; // ab 2025
+export const MINIJOB_MAX_HOURS = Math.floor((MINIJOB_LIMIT_EUR / MINIMUM_WAGE_EUR) * 100) / 100; // ~41.97
 
 // Absence types
 export const ABSENCE_TYPES = ['Urlaub', 'Krank', 'Feiertag', 'Unbezahlter Urlaub', 'Sonstiges'] as const;
