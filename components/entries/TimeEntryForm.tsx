@@ -1,26 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Plus, Save, AlertTriangle, Coffee } from 'lucide-react';
-import { TimeBlock } from '@/types';
+import { Plus, Save, AlertTriangle, Coffee, CalendarOff, Edit } from 'lucide-react';
+import { TimeBlock, Absence, TimeEntry } from '@/types';
 import { TimeBlockInput } from './TimeBlockInput';
 import { DatePicker } from './DatePicker';
+import { AbsenceForm } from './AbsenceForm';
 import { calculateTotalHours, hasOverlap, formatHours, calculatePauses, formatMinutes } from '@/lib/utils/time';
 import { MAX_TIME_BLOCKS, MAX_HOURS_PER_DAY } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
 
 interface Props {
   employeeId: string;
+  entries: TimeEntry[];
+  absences: Absence[];
+  workDate: string;
+  onWorkDateChange: (date: string) => void;
   onSaved: () => void;
+  onAbsenceSaved: () => void;
 }
 
-export function TimeEntryForm({ employeeId, onSaved }: Props) {
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const [workDate, setWorkDate] = useState(today);
+export function TimeEntryForm({ employeeId, entries, absences, workDate, onWorkDateChange, onSaved, onAbsenceSaved }: Props) {
   const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([
     { start: '', end: '' },
     { start: '', end: '' },
@@ -29,10 +32,33 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
+  // Find existing entry for selected date
+  const existingEntry = useMemo(
+    () => entries.find((e) => e.work_date === workDate),
+    [entries, workDate]
+  );
+  const existingAbsence = useMemo(
+    () => absences.find((a) => a.absence_date === workDate),
+    [absences, workDate]
+  );
+
+  const isEditing = !!existingEntry;
+
+  // Load existing entry data when date changes
+  useEffect(() => {
+    if (existingEntry) {
+      setTimeBlocks(existingEntry.time_blocks.length > 0 ? [...existingEntry.time_blocks] : [{ start: '', end: '' }]);
+      setNotes(existingEntry.notes || '');
+    } else {
+      setTimeBlocks([{ start: '', end: '' }, { start: '', end: '' }]);
+      setNotes('');
+    }
+  }, [existingEntry]);
+
   const validBlocks = timeBlocks.filter((b) => b.start && b.end && b.end > b.start);
   const pauses = calculatePauses(validBlocks);
   const totalBreakMinutes = pauses.reduce((sum, p) => sum + p.minutes, 0);
-  const totalHours = calculateTotalHours(validBlocks, totalBreakMinutes);
+  const totalHours = calculateTotalHours(validBlocks);
 
   const handleBlockChange = (index: number, block: TimeBlock) => {
     const updated = [...timeBlocks];
@@ -53,6 +79,16 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Mutual exclusion check
+    if (existingAbsence) {
+      toast({
+        title: 'Konflikt',
+        description: `Für den ${workDate} ist bereits eine Abwesenheit (${existingAbsence.absence_type}) eingetragen. Bitte zuerst die Abwesenheit unten entfernen.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const validBlocks = timeBlocks.filter((b) => b.start && b.end);
 
     if (validBlocks.length === 0) {
@@ -72,8 +108,11 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
 
     setSaving(true);
     try {
-      const res = await fetch('/api/entries', {
-        method: 'POST',
+      const url = isEditing ? `/api/entries/${existingEntry.id}` : '/api/entries';
+      const method = isEditing ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           employee_id: employeeId,
@@ -91,10 +130,15 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
         return;
       }
 
-      toast({ title: 'Gespeichert', description: 'Arbeitszeit wurde erfolgreich eingetragen.' });
+      toast({
+        title: isEditing ? 'Aktualisiert' : 'Gespeichert',
+        description: isEditing ? 'Arbeitszeit wurde aktualisiert.' : 'Arbeitszeit wurde erfolgreich eingetragen.',
+      });
 
-      setTimeBlocks([{ start: '', end: '' }, { start: '', end: '' }]);
-      setNotes('');
+      if (!isEditing) {
+        setTimeBlocks([{ start: '', end: '' }, { start: '', end: '' }]);
+        setNotes('');
+      }
       onSaved();
     } catch {
       toast({ title: 'Fehler', description: 'Verbindung zum Server fehlgeschlagen', variant: 'destructive' });
@@ -106,7 +150,17 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Date */}
-      <DatePicker value={workDate} onChange={setWorkDate} />
+      <DatePicker value={workDate} onChange={onWorkDateChange} />
+
+      {/* Edit mode indicator */}
+      {isEditing && (
+        <div className="flex items-center gap-2 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-2.5">
+          <Edit className="h-4 w-4 text-amber-600" />
+          <p className="text-xs font-semibold text-amber-800">
+            Eintrag vorhanden — Änderungen überschreiben den bestehenden Eintrag.
+          </p>
+        </div>
+      )}
 
       {/* Time blocks */}
       <div className="space-y-3">
@@ -213,15 +267,43 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
         className="resize-none rounded-2xl border-neutral-200 bg-white/60 text-sm placeholder:text-neutral-300 backdrop-blur-xl"
       />
 
-      {/* Submit */}
+      {/* Submit — Arbeitszeit */}
       <button
         type="submit"
         disabled={saving}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 py-4 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-[0.98] disabled:opacity-50"
+        className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-[0.98] disabled:opacity-50 ${
+          isEditing
+            ? 'bg-gradient-to-r from-blue-400 to-blue-500'
+            : 'bg-gradient-to-r from-amber-400 to-amber-500'
+        }`}
       >
-        <Save className="h-4 w-4" />
-        {saving ? 'Wird gespeichert...' : 'Speichern'}
+        {isEditing ? <Edit className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+        {saving ? 'Wird gespeichert...' : isEditing ? 'Änderungen speichern' : 'Arbeitszeit speichern'}
       </button>
+
+      {/* Divider */}
+      <div className="flex items-center gap-3 py-1">
+        <div className="h-px flex-1 bg-neutral-200" />
+        <div className="flex items-center gap-1.5">
+          <CalendarOff className="h-3 w-3 text-red-400" />
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">oder Abwesenheit</span>
+        </div>
+        <div className="h-px flex-1 bg-neutral-200" />
+      </div>
+
+      {/* Absence — uses same workDate */}
+      <div
+        className="rounded-2xl border border-white/80 bg-white/60 p-4 shadow-sm backdrop-blur-xl"
+        style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+      >
+        <AbsenceForm
+          employeeId={employeeId}
+          date={workDate}
+          existingEntry={existingEntry}
+          absences={absences}
+          onSaved={onAbsenceSaved}
+        />
+      </div>
     </form>
   );
 }

@@ -55,7 +55,7 @@ export async function PUT(
       );
     }
 
-    const totalHours = calculateTotalHours(entry.time_blocks, entry.break_minutes);
+    const totalHours = calculateTotalHours(entry.time_blocks);
 
     if (totalHours > MAX_HOURS_PER_DAY) {
       return NextResponse.json(

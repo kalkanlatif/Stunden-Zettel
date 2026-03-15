@@ -93,7 +93,7 @@ export function EntryManager({ employees }: Props) {
       return;
     }
 
-    const totalHours = calculateTotalHours(validBlocks, editBreak);
+    const totalHours = calculateTotalHours(validBlocks);
     if (totalHours > MAX_HOURS_PER_DAY) {
       toast({ title: 'Fehler', description: `Max. ${MAX_HOURS_PER_DAY} Stunden pro Tag`, variant: 'destructive' });
       return;

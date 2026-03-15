@@ -9,8 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { CalendarDays, Users, ChevronLeft, ChevronRight, ArrowLeft, UserPlus, Clock, AlertTriangle, Coffee, TrendingUp, BookOpen, ChevronRight as ChevronRightSmall } from 'lucide-react';
+import { Users, ArrowLeft, UserPlus, Clock, AlertTriangle, Coffee, TrendingUp, BookOpen, ChevronRight as ChevronRightSmall } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useEntries } from '@/hooks/useEntries';
 import { useAbsences } from '@/hooks/useAbsences';
@@ -24,7 +23,6 @@ import { LegalRulesPanel } from '@/components/legal/LegalRulesPanel';
 
 // Eintragen
 import { TimeEntryForm } from '@/components/entries/TimeEntryForm';
-import { AbsenceForm } from '@/components/entries/AbsenceForm';
 import { MonthlyOverview } from '@/components/entries/MonthlyOverview';
 
 // Mitarbeiter (now in Dashboard)
@@ -103,8 +101,6 @@ function DashboardTab({
   const activeEmployees = employees.filter((e) => e.active);
   const todayEntries = entries.filter((e) => e.work_date === today);
   const todayAbsences = absences.filter((a) => a.absence_date === today);
-  const totalMonthHours = entries.reduce((sum, e) => sum + Number(e.total_hours), 0);
-
   // Employees who worked today
   const todayWorkedIds = new Set(todayEntries.map((e) => e.employee_id));
   const todayAbsentIds = new Set(todayAbsences.map((a) => a.employee_id));
@@ -431,6 +427,7 @@ function EintragenView({ employeeId, onBack }: { employeeId: string; onBack: () 
   const now = new Date();
   const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
   const [viewYear, setViewYear] = useState(now.getFullYear());
+  const [workDate, setWorkDate] = useState(format(now, 'yyyy-MM-dd'));
 
   const { entries, loading: entriesLoading, refresh } = useEntries({
     employeeId,
@@ -446,16 +443,6 @@ function EintragenView({ employeeId, onBack }: { employeeId: string; onBack: () 
 
   const isCurrentMonth = viewMonth === now.getMonth() + 1 && viewYear === now.getFullYear();
 
-  const goToPrevMonth = () => {
-    if (viewMonth === 1) { setViewMonth(12); setViewYear(viewYear - 1); }
-    else setViewMonth(viewMonth - 1);
-  };
-
-  const goToNextMonth = () => {
-    if (viewMonth === 12) { setViewMonth(1); setViewYear(viewYear + 1); }
-    else setViewMonth(viewMonth + 1);
-  };
-
   let missingDays = 0;
   if (isCurrentMonth) {
     const recordedDates = entries.map((e) => e.work_date);
@@ -466,6 +453,11 @@ function EintragenView({ employeeId, onBack }: { employeeId: string; onBack: () 
       if (!recordedDates.includes(dateStr)) missingDays++;
     }
   }
+
+  const handleEditDate = (date: string) => {
+    setWorkDate(date);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   if (!employee) {
     return (
@@ -497,22 +489,28 @@ function EintragenView({ employeeId, onBack }: { employeeId: string; onBack: () 
         </div>
       </div>
 
-      <TimeEntryForm employeeId={employeeId} onSaved={refresh} />
-      <AbsenceForm employeeId={employeeId} absences={absences} onSaved={refreshAbsences} />
+      <TimeEntryForm
+        employeeId={employeeId}
+        entries={entries}
+        absences={absences}
+        workDate={workDate}
+        onWorkDateChange={setWorkDate}
+        onSaved={refresh}
+        onAbsenceSaved={refreshAbsences}
+      />
 
-      <div className="flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5">
-        <Button variant="ghost" size="icon" onClick={goToPrevMonth} className="h-8 w-8 text-amber-600 hover:bg-amber-100 hover:text-amber-800">
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-sm font-semibold text-amber-900">
-          {getMonthName(viewMonth)} {viewYear}
-        </span>
-        <Button variant="ghost" size="icon" onClick={goToNextMonth} className="h-8 w-8 text-amber-600 hover:bg-amber-100 hover:text-amber-800">
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <MonthlyOverview entries={entries} loading={entriesLoading} missingDays={missingDays} />
+      <MonthlyOverview
+        entries={entries}
+        absences={absences}
+        loading={entriesLoading}
+        missingDays={missingDays}
+        month={viewMonth}
+        year={viewYear}
+        onMonthChange={(m, y) => { setViewMonth(m); setViewYear(y); }}
+        onEditDate={handleEditDate}
+        onRefreshEntries={refresh}
+        onRefreshAbsences={refreshAbsences}
+      />
     </div>
   );
 }

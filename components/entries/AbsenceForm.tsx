@@ -1,36 +1,45 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarOff, Plus, Trash2 } from 'lucide-react';
-import { Absence, AbsenceType } from '@/types';
+import { Plus } from 'lucide-react';
+import { Absence, AbsenceType, TimeEntry } from '@/types';
 import { ABSENCE_TYPES, ABSENCE_BADGE_COLORS } from '@/lib/constants';
-import { formatDate, getWeekday } from '@/lib/utils/time';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
 
 interface Props {
   employeeId: string;
+  date: string;
+  existingEntry?: TimeEntry;
   absences: Absence[];
   onSaved: () => void;
 }
 
-export function AbsenceForm({ employeeId, absences, onSaved }: Props) {
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const [absenceDate, setAbsenceDate] = useState(today);
+export function AbsenceForm({ employeeId, date, existingEntry, absences, onSaved }: Props) {
   const [absenceType, setAbsenceType] = useState<AbsenceType>('Urlaub');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
-  const sorted = [...absences].sort((a, b) => a.absence_date.localeCompare(b.absence_date));
+  const handleSubmit = async () => {
+    // Mutual exclusion check
+    if (existingEntry) {
+      toast({
+        title: 'Konflikt',
+        description: `Für den ${date} ist bereits Arbeitszeit eingetragen. Bitte zuerst den Eintrag unten entfernen.`,
+        variant: 'destructive',
+      });
+      return;
+    }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    const existingAbsence = absences.find((a) => a.absence_date === date);
+    if (existingAbsence) {
+      toast({
+        title: 'Konflikt',
+        description: `Für den ${date} ist bereits eine Abwesenheit (${existingAbsence.absence_type}) eingetragen.`,
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setSaving(true);
     try {
@@ -39,7 +48,7 @@ export function AbsenceForm({ employeeId, absences, onSaved }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           employee_id: employeeId,
-          absence_date: absenceDate,
+          absence_date: date,
           absence_type: absenceType,
           notes: notes || undefined,
         }),
@@ -61,89 +70,52 @@ export function AbsenceForm({ employeeId, absences, onSaved }: Props) {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      const res = await fetch(`/api/absences/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error();
-      toast({ title: 'Gelöscht', description: 'Abwesenheit wurde entfernt.' });
-      onSaved();
-    } catch {
-      toast({ title: 'Fehler', description: 'Löschen fehlgeschlagen', variant: 'destructive' });
-    }
-  };
-
   return (
-    <Card className="border-0 shadow-sm">
-      <CardContent className="p-5">
-        <div className="mb-4 flex items-center gap-2">
-          <CalendarOff className="h-4 w-4 text-red-400" />
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-400">Abwesenheit</h2>
+    <div className="space-y-3">
+      {/* Type chips */}
+      <div>
+        <span className="mb-1.5 block text-[9px] font-semibold uppercase tracking-wider text-neutral-400">Art der Abwesenheit</span>
+        <div className="flex flex-wrap gap-1.5">
+          {ABSENCE_TYPES.map((type) => {
+            const isActive = absenceType === type;
+            const colors = ABSENCE_BADGE_COLORS[type] || '';
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setAbsenceType(type as AbsenceType)}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                  isActive
+                    ? 'ring-2 ring-amber-400 ring-offset-1 ' + colors
+                    : colors + ' opacity-50 hover:opacity-80'
+                }`}
+              >
+                {type}
+              </button>
+            );
+          })}
         </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            <div className="flex items-center gap-2 rounded-xl bg-neutral-50 px-3 py-2 flex-1 min-w-[140px]">
-              <Input
-                type="date"
-                value={absenceDate}
-                onChange={(e) => setAbsenceDate(e.target.value)}
-                className="h-8 border-0 bg-transparent px-0 text-sm font-medium shadow-none focus-visible:ring-0"
-              />
-            </div>
-            <Select value={absenceType} onValueChange={(v) => setAbsenceType(v as AbsenceType)}>
-              <SelectTrigger className="h-[42px] w-auto min-w-[150px] rounded-xl bg-neutral-50 border-0 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ABSENCE_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      {/* Notes */}
+      <input
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Bemerkung (optional)"
+        maxLength={500}
+        className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm placeholder:text-neutral-300 outline-none focus:border-amber-300 focus:ring-1 focus:ring-amber-300"
+      />
 
-          <div className="flex gap-2">
-            <Input
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Bemerkung (optional)"
-              maxLength={500}
-              className="rounded-xl border-neutral-200 bg-neutral-50 text-sm placeholder:text-neutral-300"
-            />
-            <Button type="submit" disabled={saving} size="sm" className="shrink-0 rounded-xl bg-amber-500 px-4 text-white hover:bg-amber-600">
-              <Plus className="mr-1 h-3.5 w-3.5" />
-              {saving ? '...' : 'Eintragen'}
-            </Button>
-          </div>
-        </form>
-
-        {/* List */}
-        {sorted.length > 0 && (
-          <div className="mt-4 space-y-1.5">
-            {sorted.map((a) => (
-              <div key={a.id} className="flex items-center justify-between rounded-xl bg-neutral-50 px-3 py-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-amber-900">{formatDate(a.absence_date)}</span>
-                      <span className="text-[11px] text-neutral-400">{getWeekday(a.absence_date)}</span>
-                    </div>
-                    {a.notes && <p className="text-xs text-neutral-400 mt-0.5">{a.notes}</p>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0 ml-2">
-                  <Badge className={`text-[10px] ${ABSENCE_BADGE_COLORS[a.absence_type]}`}>
-                    {a.absence_type}
-                  </Badge>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-300 hover:text-red-500" onClick={() => handleDelete(a.id)}>
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {/* Submit */}
+      <button
+        type="button"
+        onClick={handleSubmit}
+        disabled={saving}
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-400 to-red-500 py-3 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-[0.98] disabled:opacity-50"
+      >
+        <Plus className="h-4 w-4" />
+        {saving ? 'Wird gespeichert...' : 'Abwesenheit eintragen'}
+      </button>
+    </div>
   );
 }
