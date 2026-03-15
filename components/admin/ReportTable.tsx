@@ -66,7 +66,7 @@ export function ReportTable({ report, month, year }: Props) {
             <div className="flex items-center gap-4">
               <div className="text-right">
                 <p className="text-sm text-neutral-400">{r.workDays} Arbeitstage</p>
-                <p className="font-bold text-neutral-900">{formatHours(r.totalHours)}</p>
+                <p className="font-bold text-amber-900">{formatHours(r.totalHours)}</p>
               </div>
               <Button
                 variant="outline"

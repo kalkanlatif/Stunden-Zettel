@@ -95,7 +95,7 @@ export function EmployeeTable({ employees, onRefresh }: Props) {
   return (
     <>
       <div className="mb-4 flex justify-end">
-        <Button onClick={openNew} className="bg-neutral-900 text-white hover:bg-neutral-800">
+        <Button onClick={openNew} className="bg-amber-500 text-white hover:bg-amber-600">
           <UserPlus className="mr-2 h-4 w-4" />
           Neuen Mitarbeiter anlegen
         </Button>
@@ -173,7 +173,7 @@ export function EmployeeTable({ employees, onRefresh }: Props) {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={handleSave} disabled={saving} className="w-full bg-neutral-900 text-white hover:bg-neutral-800">
+            <Button onClick={handleSave} disabled={saving} className="w-full bg-amber-500 text-white hover:bg-amber-600">
               {saving ? 'Wird gespeichert...' : 'Speichern'}
             </Button>
           </div>

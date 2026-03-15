@@ -6,7 +6,7 @@ export const EMPLOYMENT_TYPES = ['Minijob', 'Teilzeit', 'Vollzeit', 'Aushilfe'] 
 export const EMPLOYMENT_BADGE_COLORS: Record<string, string> = {
   Minijob: 'bg-neutral-100 text-neutral-600',
   Teilzeit: 'bg-amber-50 text-amber-700',
-  Vollzeit: 'bg-neutral-900 text-white',
+  Vollzeit: 'bg-amber-600 text-white',
   Aushilfe: 'bg-amber-400/20 text-amber-800',
 };
 

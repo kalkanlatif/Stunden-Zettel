@@ -176,7 +176,7 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
             </div>
             <div className="flex flex-1 items-center justify-between rounded-xl bg-amber-400/15 px-4 py-2.5">
               <span className="text-[10px] font-medium uppercase text-amber-700">Gesamt</span>
-              <span className="text-lg font-bold text-neutral-900">
+              <span className="text-lg font-bold text-amber-900">
                 {formatHours(totalHours)}
               </span>
             </div>
@@ -202,7 +202,7 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
           />
 
           {/* Submit */}
-          <Button type="submit" disabled={saving} className="w-full rounded-xl bg-neutral-900 py-5 text-sm font-semibold text-white hover:bg-neutral-800">
+          <Button type="submit" disabled={saving} className="w-full rounded-xl bg-amber-500 py-5 text-sm font-semibold text-white hover:bg-amber-600">
             <Save className="mr-2 h-4 w-4" />
             {saving ? 'Wird gespeichert...' : 'Speichern'}
           </Button>

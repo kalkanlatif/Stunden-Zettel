@@ -110,7 +110,7 @@ export function AbsenceForm({ employeeId, absences, onSaved }: Props) {
               maxLength={500}
               className="rounded-xl border-neutral-200 bg-neutral-50 text-sm placeholder:text-neutral-300"
             />
-            <Button type="submit" disabled={saving} size="sm" className="shrink-0 rounded-xl bg-neutral-900 px-4 text-white hover:bg-neutral-800">
+            <Button type="submit" disabled={saving} size="sm" className="shrink-0 rounded-xl bg-amber-500 px-4 text-white hover:bg-amber-600">
               <Plus className="mr-1 h-3.5 w-3.5" />
               {saving ? '...' : 'Eintragen'}
             </Button>
@@ -125,7 +125,7 @@ export function AbsenceForm({ employeeId, absences, onSaved }: Props) {
                 <div className="flex items-center gap-2 min-w-0">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-neutral-900">{formatDate(a.absence_date)}</span>
+                      <span className="text-sm font-medium text-amber-900">{formatDate(a.absence_date)}</span>
                       <span className="text-[11px] text-neutral-400">{getWeekday(a.absence_date)}</span>
                     </div>
                     {a.notes && <p className="text-xs text-neutral-400 mt-0.5">{a.notes}</p>}

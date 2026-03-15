@@ -28,7 +28,7 @@ export function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
               onClick={() => onTabChange(id)}
               className={`flex flex-1 flex-col items-center gap-0.5 py-1 transition-colors ${
                 isActive
-                  ? 'text-[#1DB954]'
+                  ? 'text-amber-500'
                   : 'text-neutral-400 hover:text-neutral-600'
               }`}
             >

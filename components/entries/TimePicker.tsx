@@ -58,7 +58,7 @@ export function TimePicker({ value, onChange, placeholder = '00:00' }: Props) {
         onClick={() => setOpen(!open)}
         className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-semibold transition-all ${
           value
-            ? 'border-amber-300 bg-white text-neutral-900 shadow-sm'
+            ? 'border-amber-300 bg-white text-amber-900 shadow-sm'
             : 'border-dashed border-neutral-300 bg-white text-neutral-400'
         } hover:border-amber-400 hover:shadow-md`}
       >
@@ -77,7 +77,7 @@ export function TimePicker({ value, onChange, placeholder = '00:00' }: Props) {
                 onClick={() => handleHourClick(h)}
                 className={`flex w-full items-center justify-center py-1.5 text-sm transition-colors ${
                   h === hour
-                    ? 'bg-amber-400 font-bold text-neutral-900'
+                    ? 'bg-amber-400 font-bold text-amber-900'
                     : 'text-neutral-600 hover:bg-neutral-50'
                 }`}
               >
@@ -94,7 +94,7 @@ export function TimePicker({ value, onChange, placeholder = '00:00' }: Props) {
                 onClick={() => handleMinuteClick(m)}
                 className={`flex flex-1 items-center justify-center text-sm transition-colors ${
                   m === minute
-                    ? 'bg-amber-400 font-bold text-neutral-900'
+                    ? 'bg-amber-400 font-bold text-amber-900'
                     : 'text-neutral-600 hover:bg-neutral-50'
                 }`}
               >

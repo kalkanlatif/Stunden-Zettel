@@ -71,15 +71,15 @@ export function MonthlyOverview({ entries, loading, missingDays = 0 }: Props) {
         ) : (
           <div className="space-y-1.5">
             {sorted.map((entry) => (
-              <div key={entry.id} className="flex items-center justify-between rounded-xl bg-neutral-50 px-3 py-2.5">
+              <div key={entry.id} className="flex items-center justify-between rounded-xl bg-amber-50/50 px-3 py-2.5">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-neutral-900">{formatDate(entry.work_date)}</span>
+                    <span className="text-sm font-medium text-amber-900">{formatDate(entry.work_date)}</span>
                     <span className="text-[11px] text-neutral-400">{getWeekday(entry.work_date)}</span>
                   </div>
                   <TimeBlocksWithPauses entry={entry} />
                 </div>
-                <span className="ml-3 shrink-0 rounded-lg bg-white px-2.5 py-1 text-sm font-bold text-neutral-900 shadow-sm">
+                <span className="ml-3 shrink-0 rounded-lg bg-white px-2.5 py-1 text-sm font-bold text-amber-900 shadow-sm">
                   {formatHours(Number(entry.total_hours))}
                 </span>
               </div>
@@ -90,7 +90,7 @@ export function MonthlyOverview({ entries, loading, missingDays = 0 }: Props) {
               <span className="text-sm font-semibold text-amber-800">
                 {sorted.length} {sorted.length === 1 ? 'Tag' : 'Tage'}
               </span>
-              <span className="text-base font-bold text-neutral-900">
+              <span className="text-base font-bold text-amber-900">
                 {formatHours(totalHours)} Std.
               </span>
             </div>

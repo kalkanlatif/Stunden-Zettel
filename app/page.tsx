@@ -66,19 +66,19 @@ function DashboardTab() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-xl font-bold text-neutral-900">Dashboard</h1>
+      <h1 className="text-xl font-bold text-amber-900">Dashboard</h1>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-neutral-900">{activeEmployees.length}</p>
+            <p className="text-2xl font-bold text-amber-900">{activeEmployees.length}</p>
             <p className="text-[11px] uppercase text-neutral-400">Mitarbeiter</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-neutral-900">{totalEntries}</p>
+            <p className="text-2xl font-bold text-amber-900">{totalEntries}</p>
             <p className="text-[11px] uppercase text-neutral-400">Einträge (diesen Monat)</p>
           </CardContent>
         </Card>
@@ -88,7 +88,7 @@ function DashboardTab() {
       <Card className="border-0 shadow-sm">
         <CardContent className="p-5">
           <div className="mb-3 flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-[#1DB954]" />
+            <CalendarDays className="h-4 w-4 text-amber-500" />
             <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-400">Heute</h2>
           </div>
           {todayEntries.length === 0 ? (
@@ -100,19 +100,19 @@ function DashboardTab() {
               {todayEntries.map((entry) => {
                 const emp = employees.find((e) => e.id === entry.employee_id);
                 return (
-                  <div key={entry.id} className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3">
+                  <div key={entry.id} className="flex items-center justify-between rounded-xl bg-amber-50/50 px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1DB954] text-xs font-bold text-white">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400 text-xs font-bold text-amber-900">
                         {emp ? `${emp.first_name[0]}${emp.last_name[0]}` : '??'}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-900">
+                        <p className="text-sm font-medium text-amber-900">
                           {emp ? `${emp.first_name} ${emp.last_name}` : 'Unbekannt'}
                         </p>
                         <p className="text-xs text-neutral-400">{formatTimeBlocks(entry.time_blocks)}</p>
                       </div>
                     </div>
-                    <span className="text-sm font-semibold text-neutral-900">
+                    <span className="text-sm font-semibold text-amber-900">
                       {formatHours(Number(entry.total_hours))}
                     </span>
                   </div>
@@ -127,17 +127,17 @@ function DashboardTab() {
       <Card className="border-0 shadow-sm">
         <CardContent className="p-5">
           <div className="mb-3 flex items-center gap-2">
-            <Users className="h-4 w-4 text-[#1DB954]" />
+            <Users className="h-4 w-4 text-amber-500" />
             <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-400">Aktive Mitarbeiter</h2>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {activeEmployees.map((emp) => (
-              <div key={emp.id} className="flex items-center gap-2.5 rounded-xl bg-neutral-50 px-3 py-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1DB954] text-xs font-bold text-white">
+              <div key={emp.id} className="flex items-center gap-2.5 rounded-xl bg-amber-50/50 px-3 py-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400 text-xs font-bold text-amber-900">
                   {emp.first_name[0]}{emp.last_name[0]}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-neutral-900">{emp.first_name} {emp.last_name}</p>
+                  <p className="truncate text-sm font-medium text-amber-900">{emp.first_name} {emp.last_name}</p>
                   <Badge className={`text-[10px] ${EMPLOYMENT_BADGE_COLORS[emp.employment_type]}`}>
                     {emp.employment_type}
                   </Badge>
@@ -210,7 +210,7 @@ function EintragenTab() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-xl font-bold text-neutral-900">Eintragen</h1>
+      <h1 className="text-xl font-bold text-amber-900">Eintragen</h1>
 
       {/* Employee dropdown */}
       <div>
@@ -233,11 +233,11 @@ function EintragenTab() {
         <>
           {/* Employee info */}
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#1DB954] text-sm font-bold text-white">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400 text-sm font-bold text-amber-900">
               {selectedEmployee.first_name[0]}{selectedEmployee.last_name[0]}
             </div>
             <div>
-              <h2 className="text-lg font-bold text-neutral-900">
+              <h2 className="text-lg font-bold text-amber-900">
                 {selectedEmployee.first_name} {selectedEmployee.last_name}
               </h2>
               <Badge className={`text-[11px] ${EMPLOYMENT_BADGE_COLORS[selectedEmployee.employment_type]}`}>
@@ -253,14 +253,14 @@ function EintragenTab() {
           <AbsenceForm employeeId={selectedEmployeeId} absences={absences} onSaved={refreshAbsences} />
 
           {/* Month navigation */}
-          <div className="flex items-center justify-between rounded-xl bg-neutral-900 px-4 py-2.5">
-            <Button variant="ghost" size="icon" onClick={goToPrevMonth} className="h-8 w-8 text-neutral-400 hover:bg-neutral-800 hover:text-white">
+          <div className="flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5">
+            <Button variant="ghost" size="icon" onClick={goToPrevMonth} className="h-8 w-8 text-amber-600 hover:bg-amber-100 hover:text-amber-800">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-sm font-semibold text-white">
+            <span className="text-sm font-semibold text-amber-900">
               {getMonthName(viewMonth)} {viewYear}
             </span>
-            <Button variant="ghost" size="icon" onClick={goToNextMonth} className="h-8 w-8 text-neutral-400 hover:bg-neutral-800 hover:text-white">
+            <Button variant="ghost" size="icon" onClick={goToNextMonth} className="h-8 w-8 text-amber-600 hover:bg-amber-100 hover:text-amber-800">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -295,7 +295,7 @@ function MitarbeiterTab() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-xl font-bold text-neutral-900">Mitarbeiter</h1>
+      <h1 className="text-xl font-bold text-amber-900">Mitarbeiter</h1>
       <EmployeeTable employees={employees} onRefresh={refresh} />
     </div>
   );
@@ -311,7 +311,7 @@ function BerichteTab() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-xl font-bold text-neutral-900">Berichte</h1>
+      <h1 className="text-xl font-bold text-amber-900">Berichte</h1>
 
       <div className="flex gap-4">
         <div>
