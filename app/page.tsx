@@ -7,9 +7,7 @@ import { BottomTabBar, type TabId } from '@/components/layout/BottomTabBar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Users, ArrowLeft, UserPlus, Clock, AlertTriangle, Coffee, TrendingUp, BookOpen, ChevronRight as ChevronRightSmall } from 'lucide-react';
+import { Users, ArrowLeft, UserPlus, Clock, AlertTriangle, Coffee, TrendingUp, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useEntries } from '@/hooks/useEntries';
 import { useAbsences } from '@/hooks/useAbsences';
@@ -385,7 +383,7 @@ function DashboardTab({
                     </div>
                     <div className="flex items-center gap-1 text-[10px] font-medium text-amber-500">
                       <span>{totalRules} Regeln</span>
-                      <ChevronRightSmall className="h-3 w-3" />
+                      <ChevronRight className="h-3 w-3" />
                     </div>
                   </div>
                 </button>
@@ -409,7 +407,7 @@ function DashboardTab({
                   className="w-full flex items-center justify-center gap-1.5 border-t border-amber-100 py-2.5 text-[11px] font-semibold text-amber-600 hover:bg-amber-50 transition-colors"
                 >
                   Alle {totalRules} Regeln anzeigen
-                  <ChevronRightSmall className="h-3 w-3" />
+                  <ChevronRight className="h-3 w-3" />
                 </button>
               </CardContent>
             </Card>
@@ -579,51 +577,55 @@ function BerichteTab() {
   const [reportMonth, setReportMonth] = useState(now.getMonth() + 1);
   const [reportYear, setReportYear] = useState(now.getFullYear());
   const { report, loading } = useMonthlyReport(reportMonth, reportYear);
-  const years = Array.from({ length: 3 }, (_, i) => now.getFullYear() - i);
+  const { absences, loading: absLoading } = useAbsences({ month: reportMonth, year: reportYear });
+
+  const totalHours = report.reduce((s, r) => s + r.totalHours, 0);
+  const totalDays = report.reduce((s, r) => s + r.workDays, 0);
+
+  const goPrev = () => {
+    if (reportMonth === 1) { setReportMonth(12); setReportYear(reportYear - 1); }
+    else setReportMonth(reportMonth - 1);
+  };
+  const goNext = () => {
+    if (reportMonth === 12) { setReportMonth(1); setReportYear(reportYear + 1); }
+    else setReportMonth(reportMonth + 1);
+  };
 
   return (
-    <div className="space-y-5">
-      <h1 className="text-xl font-bold text-amber-900">Berichte</h1>
-
-      <div className="flex gap-4">
-        <div>
-          <Label className="text-xs text-neutral-500">Monat</Label>
-          <Select value={String(reportMonth)} onValueChange={(v) => setReportMonth(parseInt(v))}>
-            <SelectTrigger className="mt-1 w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 12 }, (_, i) => (
-                <SelectItem key={i + 1} value={String(i + 1)}>
-                  {getMonthName(i + 1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label className="text-xs text-neutral-500">Jahr</Label>
-          <Select value={String(reportYear)} onValueChange={(v) => setReportYear(parseInt(v))}>
-            <SelectTrigger className="mt-1 w-28">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {years.map((y) => (
-                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className="space-y-4">
+      {/* Month navigation */}
+      <div
+        className="rounded-2xl border border-white/80 bg-white/60 p-4 shadow-sm backdrop-blur-xl"
+        style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+      >
+        <div className="flex items-center justify-between">
+          <button type="button" onClick={goPrev} className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition-colors hover:bg-amber-100">
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <div className="text-center">
+            <span className="text-sm font-bold text-amber-900">{getMonthName(reportMonth)} {reportYear}</span>
+            {!loading && (
+              <div className="mt-0.5 flex items-center justify-center gap-3">
+                <span className="text-[10px] text-neutral-400">{report.length} Mitarbeiter</span>
+                <span className="text-[10px] text-neutral-400">{totalDays} Tage</span>
+                <span className="text-[10px] font-semibold text-amber-700">{formatHours(totalHours)}</span>
+              </div>
+            )}
+          </div>
+          <button type="button" onClick={goNext} className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition-colors hover:bg-amber-100">
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
-      {loading ? (
-        <div className="space-y-4">
+      {loading || absLoading ? (
+        <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-lg" />
+            <Skeleton key={i} className="h-20 w-full rounded-2xl" />
           ))}
         </div>
       ) : (
-        <ReportTable report={report} month={reportMonth} year={reportYear} />
+        <ReportTable report={report} absences={absences} month={reportMonth} year={reportYear} />
       )}
     </div>
   );

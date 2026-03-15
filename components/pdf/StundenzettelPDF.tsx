@@ -61,6 +61,15 @@ const styles = StyleSheet.create({
     fontSize: 9,
     backgroundColor: '#f9f9f9',
   },
+  tableRowAbsence: {
+    flexDirection: 'row',
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#ddd',
+    padding: 5,
+    fontSize: 9,
+    backgroundColor: '#e8e8e8',
+    color: '#666',
+  },
   tableFooter: {
     flexDirection: 'row',
     padding: 6,
@@ -76,24 +85,10 @@ const styles = StyleSheet.create({
   colTime: { flex: 1 },
   colBreak: { width: 50, textAlign: 'right' as const },
   colHours: { width: 60, textAlign: 'right' as const },
-  absenceHeader: {
-    fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
-    marginTop: 16,
-    marginBottom: 8,
+  absenceText: {
+    color: '#888',
+    fontFamily: 'Helvetica-Oblique',
   },
-  absenceTableHeader: {
-    flexDirection: 'row',
-    backgroundColor: '#991b1b',
-    color: '#fff',
-    padding: 6,
-    fontFamily: 'Helvetica-Bold',
-    fontSize: 9,
-  },
-  colAbsDate: { width: 80 },
-  colAbsWeekday: { width: 80 },
-  colAbsType: { width: 120 },
-  colAbsNotes: { flex: 1 },
   signatureSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -129,9 +124,19 @@ interface Props {
   businessName: string;
 }
 
+type DayRow =
+  | { type: 'entry'; date: string; entry: TimeEntry }
+  | { type: 'absence'; date: string; absence: Absence };
+
 export function StundenzettelPDF({ employee, entries, absences, period, businessName }: Props) {
   const totalHours = entries.reduce((sum, e) => sum + Number(e.total_hours), 0);
   const totalBreakMinutes = entries.reduce((sum, e) => sum + e.break_minutes, 0);
+
+  // Merge entries and absences into a single sorted list
+  const rows: DayRow[] = [
+    ...entries.map((e) => ({ type: 'entry' as const, date: e.work_date, entry: e })),
+    ...absences.map((a) => ({ type: 'absence' as const, date: a.absence_date, absence: a })),
+  ].sort((a, b) => a.date.localeCompare(b.date));
 
   return (
     <Document>
@@ -162,29 +167,45 @@ export function StundenzettelPDF({ employee, entries, absences, period, business
 
         {/* Table */}
         <View style={styles.table}>
-          {/* Table header */}
           <View style={styles.tableHeader}>
             <Text style={styles.colDay}>Tag</Text>
             <Text style={styles.colDate}>Datum</Text>
             <Text style={styles.colWeekday}>Wochentag</Text>
-            <Text style={styles.colTime}>Arbeitszeit von-bis</Text>
+            <Text style={styles.colTime}>Arbeitszeit / Abwesenheit</Text>
             <Text style={styles.colBreak}>Pause</Text>
             <Text style={styles.colHours}>Stunden</Text>
           </View>
 
-          {/* Table rows */}
-          {entries.map((entry, i) => {
-            const day = new Date(entry.work_date).getDate();
-            return (
-              <View key={entry.id} style={i % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
-                <Text style={styles.colDay}>{day}.</Text>
-                <Text style={styles.colDate}>{formatDate(entry.work_date)}</Text>
-                <Text style={styles.colWeekday}>{getWeekday(entry.work_date)}</Text>
-                <Text style={styles.colTime}>{formatTimeBlocks(entry.time_blocks)}</Text>
-                <Text style={styles.colBreak}>{entry.break_minutes > 0 ? `${entry.break_minutes} Min.` : '-'}</Text>
-                <Text style={styles.colHours}>{formatHours(Number(entry.total_hours))}</Text>
-              </View>
-            );
+          {rows.map((row, i) => {
+            if (row.type === 'entry') {
+              const entry = row.entry;
+              const day = new Date(entry.work_date + 'T00:00:00').getDate();
+              return (
+                <View key={`e-${entry.id}`} style={i % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
+                  <Text style={styles.colDay}>{day}.</Text>
+                  <Text style={styles.colDate}>{formatDate(entry.work_date)}</Text>
+                  <Text style={styles.colWeekday}>{getWeekday(entry.work_date)}</Text>
+                  <Text style={styles.colTime}>{formatTimeBlocks(entry.time_blocks)}</Text>
+                  <Text style={styles.colBreak}>{entry.break_minutes > 0 ? `${entry.break_minutes} Min.` : '-'}</Text>
+                  <Text style={styles.colHours}>{formatHours(Number(entry.total_hours))}</Text>
+                </View>
+              );
+            } else {
+              const absence = row.absence;
+              const day = new Date(absence.absence_date + 'T00:00:00').getDate();
+              return (
+                <View key={`a-${absence.id}`} style={styles.tableRowAbsence}>
+                  <Text style={styles.colDay}>{day}.</Text>
+                  <Text style={styles.colDate}>{formatDate(absence.absence_date)}</Text>
+                  <Text style={styles.colWeekday}>{getWeekday(absence.absence_date)}</Text>
+                  <Text style={{ ...styles.colTime, ...styles.absenceText }}>
+                    {absence.absence_type}{absence.notes ? ` — ${absence.notes}` : ''}
+                  </Text>
+                  <Text style={styles.colBreak}>-</Text>
+                  <Text style={styles.colHours}>-</Text>
+                </View>
+              );
+            }
           })}
 
           {/* Total row */}
@@ -192,32 +213,13 @@ export function StundenzettelPDF({ employee, entries, absences, period, business
             <Text style={styles.colDay}></Text>
             <Text style={styles.colDate}></Text>
             <Text style={styles.colWeekday}>Gesamt:</Text>
-            <Text style={styles.colTime}>{entries.length} Arbeitstage</Text>
+            <Text style={styles.colTime}>
+              {entries.length} Arbeitstage{absences.length > 0 ? ` · ${absences.length} Abwesend` : ''}
+            </Text>
             <Text style={styles.colBreak}>{totalBreakMinutes > 0 ? `${totalBreakMinutes} Min.` : '-'}</Text>
             <Text style={styles.colHours}>{formatHours(totalHours)}</Text>
           </View>
         </View>
-
-        {/* Absences */}
-        {absences.length > 0 && (
-          <View>
-            <Text style={styles.absenceHeader}>Abwesenheiten ({absences.length})</Text>
-            <View style={styles.absenceTableHeader}>
-              <Text style={styles.colAbsDate}>Datum</Text>
-              <Text style={styles.colAbsWeekday}>Wochentag</Text>
-              <Text style={styles.colAbsType}>Art</Text>
-              <Text style={styles.colAbsNotes}>Bemerkung</Text>
-            </View>
-            {absences.map((absence, i) => (
-              <View key={absence.id} style={i % 2 === 0 ? styles.tableRow : styles.tableRowAlt}>
-                <Text style={styles.colAbsDate}>{formatDate(absence.absence_date)}</Text>
-                <Text style={styles.colAbsWeekday}>{getWeekday(absence.absence_date)}</Text>
-                <Text style={styles.colAbsType}>{absence.absence_type}</Text>
-                <Text style={styles.colAbsNotes}>{absence.notes || '-'}</Text>
-              </View>
-            ))}
-          </View>
-        )}
 
         {/* Signatures */}
         <View style={styles.signatureSection}>
