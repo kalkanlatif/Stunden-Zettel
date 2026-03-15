@@ -78,104 +78,108 @@ export function ReportTable({ report, absences, month, year }: Props) {
         return (
           <div key={r.employee.id} className={GLASS} style={GLASS_STYLE}>
             {/* Summary row */}
-            <button
-              type="button"
-              onClick={() => toggleExpand(r.employee.id)}
-              className="flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-amber-50/30 rounded-2xl"
-            >
-              {/* Expand icon */}
-              <span className="text-neutral-300 shrink-0">
-                {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-              </span>
-
-              {/* Avatar */}
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 to-amber-400 text-xs font-bold text-amber-900">
-                {r.employee.first_name[0]}{r.employee.last_name[0]}
-              </div>
-
-              {/* Name + badge */}
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-amber-900">
-                  {r.employee.first_name} {r.employee.last_name}
-                </p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <Badge className={`text-[9px] ${EMPLOYMENT_BADGE_COLORS[r.employee.employment_type]}`}>
-                    {r.employee.employment_type}
-                  </Badge>
-                  <span className="text-[10px] text-neutral-400">
-                    {r.workDays} Tage · Ø {formatHours(avgHours)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Total hours */}
-              <div className="shrink-0 text-right">
-                <p className="text-lg font-bold text-amber-900">{formatHours(r.totalHours)}</p>
-                {empAbsences.length > 0 && (
-                  <span className="text-[9px] text-neutral-400">
-                    {empAbsences.length} Abwesend
-                  </span>
-                )}
-              </div>
-
-              {/* PDF button */}
+            <div className="p-3">
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); downloadPdf(r.employee.id); }}
-                className="flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-red-500 to-red-600 px-3 py-2 text-white shadow-sm transition-all hover:shadow-md active:scale-95"
-                title="PDF herunterladen"
+                onClick={() => toggleExpand(r.employee.id)}
+                className="flex w-full items-center gap-2.5 text-left"
               >
-                <FileDown className="h-3.5 w-3.5" />
-                <span className="text-[10px] font-bold">PDF</span>
+                {/* Expand icon */}
+                <span className="text-neutral-300 shrink-0">
+                  {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </span>
+
+                {/* Avatar */}
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 to-amber-400 text-[10px] font-bold text-amber-900">
+                  {r.employee.first_name[0]}{r.employee.last_name[0]}
+                </div>
+
+                {/* Name + badge */}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-amber-900">
+                    {r.employee.first_name} {r.employee.last_name}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <Badge className={`text-[8px] ${EMPLOYMENT_BADGE_COLORS[r.employee.employment_type]}`}>
+                      {r.employee.employment_type}
+                    </Badge>
+                    <span className="text-[9px] text-neutral-400">
+                      {r.workDays}d · Ø {formatHours(avgHours)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Total hours */}
+                <div className="shrink-0 text-right">
+                  <p className="text-base font-bold text-amber-900">{formatHours(r.totalHours)}</p>
+                  {empAbsences.length > 0 && (
+                    <span className="text-[8px] text-neutral-400">
+                      {empAbsences.length} Abw.
+                    </span>
+                  )}
+                </div>
               </button>
-            </button>
+
+              {/* PDF button — full width below on mobile */}
+              <button
+                type="button"
+                onClick={() => downloadPdf(r.employee.id)}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-500 to-red-600 px-3 py-2.5 text-white shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
+              >
+                <FileDown className="h-4 w-4" />
+                <span className="text-xs font-bold">PDF herunterladen</span>
+              </button>
+            </div>
 
             {/* Detail view */}
             {isOpen && (
-              <div className="border-t border-neutral-100 px-4 pb-4 pt-2">
-                {/* Column headers */}
-                <div className="flex items-center gap-2 px-2 py-1.5 mb-1">
-                  <span className="w-20 text-[9px] font-semibold uppercase tracking-wider text-neutral-400">Datum</span>
-                  <span className="w-16 text-[9px] font-semibold uppercase tracking-wider text-neutral-400">Tag</span>
-                  <span className="flex-1 text-[9px] font-semibold uppercase tracking-wider text-neutral-400">Arbeitszeit</span>
-                  <span className="w-16 text-right text-[9px] font-semibold uppercase tracking-wider text-neutral-400">Pause</span>
-                  <span className="w-16 text-right text-[9px] font-semibold uppercase tracking-wider text-neutral-400">Stunden</span>
-                </div>
-
-                <div className="space-y-1">
+              <div className="border-t border-neutral-100 px-3 pb-3 pt-2">
+                <div className="space-y-1.5">
                   {dayRows.map((row) => {
                     if (row.type === 'entry') {
                       const entry = row.entry;
                       return (
-                        <div key={`e-${entry.id}`} className="flex items-center gap-2 rounded-xl bg-amber-50/50 px-2 py-2">
-                          <span className="w-20 text-xs font-medium text-amber-900">{formatDate(entry.work_date)}</span>
-                          <span className="w-16 text-[11px] text-neutral-400">{getWeekday(entry.work_date)}</span>
-                          <span className="flex-1 text-[11px] text-neutral-600">{formatTimeBlocks(entry.time_blocks)}</span>
-                          <span className="w-16 text-right text-[11px] text-neutral-400">
-                            {entry.break_minutes > 0 ? formatMinutes(entry.break_minutes) : '-'}
-                          </span>
-                          <span className="w-16 text-right text-xs font-bold text-amber-900">
-                            {formatHours(Number(entry.total_hours))}
-                          </span>
+                        <div key={`e-${entry.id}`} className="rounded-xl bg-amber-50/50 px-3 py-2.5">
+                          {/* Top: Date + Hours */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-amber-900">{formatDate(entry.work_date)}</span>
+                              <span className="text-[10px] text-neutral-400">{getWeekday(entry.work_date)}</span>
+                            </div>
+                            <span className="text-xs font-bold text-amber-900">
+                              {formatHours(Number(entry.total_hours))}
+                            </span>
+                          </div>
+                          {/* Bottom: Time blocks + Pause */}
+                          <div className="mt-1 flex items-center justify-between">
+                            <span className="text-[10px] text-neutral-500">{formatTimeBlocks(entry.time_blocks)}</span>
+                            {entry.break_minutes > 0 && (
+                              <span className="text-[9px] text-neutral-400">
+                                Pause: {formatMinutes(entry.break_minutes)}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       );
                     } else {
                       const absence = row.absence;
                       return (
-                        <div key={`a-${absence.id}`} className="flex items-center gap-2 rounded-xl bg-neutral-100/70 px-2 py-2">
-                          <span className="w-20 text-xs font-medium text-neutral-500">{formatDate(absence.absence_date)}</span>
-                          <span className="w-16 text-[11px] text-neutral-400">{getWeekday(absence.absence_date)}</span>
-                          <div className="flex flex-1 items-center gap-1.5">
-                            <CalendarOff className="h-3 w-3 text-neutral-400" />
-                            <Badge className={`text-[9px] ${ABSENCE_BADGE_COLORS[absence.absence_type]}`}>
+                        <div key={`a-${absence.id}`} className="rounded-xl bg-neutral-100/70 px-3 py-2.5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-medium text-neutral-500">{formatDate(absence.absence_date)}</span>
+                              <span className="text-[10px] text-neutral-400">{getWeekday(absence.absence_date)}</span>
+                            </div>
+                            <Badge className={`text-[8px] ${ABSENCE_BADGE_COLORS[absence.absence_type]}`}>
                               {absence.absence_type}
                             </Badge>
-                            {absence.notes && (
-                              <span className="text-[10px] text-neutral-400">{absence.notes}</span>
-                            )}
                           </div>
-                          <span className="w-16 text-right text-[11px] text-neutral-400">-</span>
-                          <span className="w-16 text-right text-xs text-neutral-400">-</span>
+                          {absence.notes && (
+                            <div className="mt-1 flex items-center gap-1">
+                              <CalendarOff className="h-2.5 w-2.5 text-neutral-400" />
+                              <span className="text-[9px] text-neutral-400">{absence.notes}</span>
+                            </div>
+                          )}
                         </div>
                       );
                     }
