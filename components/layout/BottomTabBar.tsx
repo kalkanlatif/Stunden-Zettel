@@ -1,12 +1,12 @@
 'use client';
 
-import { LayoutDashboard, Users, BarChart3, Settings } from 'lucide-react';
+import { LayoutDashboard, Eye, BarChart3, Settings } from 'lucide-react';
 
-export type TabId = 'dashboard' | 'mitarbeiter' | 'berichte' | 'einstellungen';
+export type TabId = 'dashboard' | 'uebersicht' | 'berichte' | 'einstellungen';
 
 const tabs: { id: TabId; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'mitarbeiter', label: 'Mitarbeiter', icon: Users },
+  { id: 'uebersicht', label: 'Übersicht', icon: Eye },
   { id: 'berichte', label: 'Berichte', icon: BarChart3 },
   { id: 'einstellungen', label: 'Einstellungen', icon: Settings },
 ];
