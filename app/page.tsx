@@ -29,6 +29,9 @@ import { EmployeeTable } from '@/components/admin/EmployeeTable';
 // Übersicht
 import { UebersichtPanel } from '@/components/admin/UebersichtPanel';
 
+// Einstellungen
+import { EinstellungenPanel } from '@/components/admin/EinstellungenPanel';
+
 // Berichte
 import { ReportTable } from '@/components/admin/ReportTable';
 
@@ -633,28 +636,13 @@ function BerichteTab() {
 
 /* ─── Einstellungen ─── */
 function EinstellungenTab() {
-  return (
-    <div className="space-y-5">
-      <h1 className="text-xl font-bold text-amber-900">Einstellungen</h1>
+  const { entries } = useEntries({});
+  const { absences } = useAbsences({});
 
-      <Card className="border-0 shadow-sm">
-        <CardContent className="p-5 space-y-4">
-          <div>
-            <h3 className="text-sm font-semibold text-amber-900">Betrieb</h3>
-            <p className="text-sm text-neutral-500 mt-1">{BUSINESS_NAME}</p>
-          </div>
-          <div className="border-t border-amber-100 pt-4">
-            <h3 className="text-sm font-semibold text-amber-900">Gesetzliche Vorgaben</h3>
-            <p className="text-xs text-neutral-400 mt-1">
-              Arbeitszeiterfassung gem. § 17 MiLoG · Aufbewahrungspflicht: mind. 2 Jahre
-            </p>
-          </div>
-          <div className="border-t border-amber-100 pt-4">
-            <h3 className="text-sm font-semibold text-amber-900">Version</h3>
-            <p className="text-xs text-neutral-400 mt-1">Kalkan Stundenzettel v1.0</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+  return (
+    <EinstellungenPanel
+      totalEntries={entries.length}
+      totalAbsences={absences.length}
+    />
   );
 }
