@@ -13,7 +13,7 @@ import { useEntries } from '@/hooks/useEntries';
 import { useAbsences } from '@/hooks/useAbsences';
 import { useMonthlyReport } from '@/hooks/useMonthlyReport';
 import { formatHours, formatTimeBlocks, getMonthName } from '@/lib/utils/time';
-import { EMPLOYMENT_BADGE_COLORS, BUSINESS_NAME, MAX_HOURS_PER_DAY, MILOG_DEADLINE_DAYS } from '@/lib/constants';
+import { EMPLOYMENT_BADGE_COLORS, MAX_HOURS_PER_DAY, MILOG_DEADLINE_DAYS } from '@/lib/constants';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { getImportantRules, getTotalRuleCount } from '@/lib/legal-rules';
@@ -31,6 +31,7 @@ import { UebersichtPanel } from '@/components/admin/UebersichtPanel';
 
 // Einstellungen
 import { EinstellungenPanel } from '@/components/admin/EinstellungenPanel';
+import { useSettings } from '@/hooks/useSettings';
 
 // Berichte
 import { ReportTable } from '@/components/admin/ReportTable';
@@ -93,6 +94,7 @@ function DashboardTab({
   onOpenMitarbeiter: () => void;
 }) {
   const [legalPanelOpen, setLegalPanelOpen] = useState(false);
+  const { settings } = useSettings();
   const { employees, loading: empLoading } = useEmployees(true);
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
@@ -139,7 +141,7 @@ function DashboardTab({
       {/* Welcome header */}
       <div className="rounded-2xl bg-gradient-to-r from-amber-400 to-amber-300 px-5 py-4">
         <p className="text-xs font-medium text-amber-800/70 capitalize">{todayLabel}</p>
-        <h1 className="text-lg font-bold text-amber-900">{BUSINESS_NAME}</h1>
+        <h1 className="text-lg font-bold text-amber-900">{settings.businessName}</h1>
         <p className="mt-1 text-xs text-amber-800/60">
           {todayEntries.length} von {activeEmployees.length} Mitarbeitern eingetragen
         </p>
