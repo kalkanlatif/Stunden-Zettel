@@ -3,7 +3,14 @@
 import { useEmployees } from '@/hooks/useEmployees';
 import { useAbsences } from '@/hooks/useAbsences';
 import { EmployeeList } from '@/components/employees/EmployeeList';
+import { BUSINESS_NAME } from '@/lib/constants';
 import { format } from 'date-fns';
+import { de } from 'date-fns/locale';
+import { UtensilsCrossed } from 'lucide-react';
+
+function getTodayLabel() {
+  return format(new Date(), "EEEE, d. MMMM yyyy", { locale: de });
+}
 
 export default function HomePage() {
   const { employees, loading } = useEmployees();
