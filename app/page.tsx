@@ -28,6 +28,9 @@ import { MonthlyOverview } from '@/components/entries/MonthlyOverview';
 // Mitarbeiter (now in Dashboard)
 import { EmployeeTable } from '@/components/admin/EmployeeTable';
 
+// Übersicht
+import { UebersichtPanel } from '@/components/admin/UebersichtPanel';
+
 // Berichte
 import { ReportTable } from '@/components/admin/ReportTable';
 
@@ -555,149 +558,18 @@ function UebersichtTab() {
   const [year, setYear] = useState(now.getFullYear());
   const { report, loading } = useMonthlyReport(month, year);
   const { employees } = useEmployees(true);
-  const activeEmployees = employees.filter((e) => e.active);
-  const years = Array.from({ length: 3 }, (_, i) => now.getFullYear() - i);
-
-  const totalHoursAll = report.reduce((sum, r) => sum + r.totalHours, 0);
-  const totalDaysAll = report.reduce((sum, r) => sum + r.workDays, 0);
-
-  // Employees with no entries this month
-  const employeesWithEntries = new Set(report.map((r) => r.employee.id));
-  const employeesWithout = activeEmployees.filter((e) => !employeesWithEntries.has(e.id));
+  const { absences, loading: absLoading } = useAbsences({ month, year });
 
   return (
-    <div className="space-y-5">
-      <h1 className="text-xl font-bold text-amber-900">Übersicht</h1>
-
-      {/* Month/Year filter */}
-      <div className="flex gap-3">
-        <div>
-          <Label className="text-xs text-neutral-500">Monat</Label>
-          <Select value={String(month)} onValueChange={(v) => setMonth(parseInt(v))}>
-            <SelectTrigger className="mt-1 w-36">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 12 }, (_, i) => (
-                <SelectItem key={i + 1} value={String(i + 1)}>
-                  {getMonthName(i + 1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label className="text-xs text-neutral-500">Jahr</Label>
-          <Select value={String(year)} onValueChange={(v) => setYear(parseInt(v))}>
-            <SelectTrigger className="mt-1 w-24">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {years.map((y) => (
-                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {loading ? (
-        <div className="space-y-3">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-xl" />
-          ))}
-        </div>
-      ) : (
-        <>
-          {/* Summary stats */}
-          <div className="grid grid-cols-3 gap-2">
-            <Card className="border-0 shadow-sm">
-              <CardContent className="p-3 text-center">
-                <p className="text-lg font-bold text-amber-900">{report.length}</p>
-                <p className="text-[10px] uppercase text-neutral-400">Mitarbeiter</p>
-              </CardContent>
-            </Card>
-            <Card className="border-0 shadow-sm">
-              <CardContent className="p-3 text-center">
-                <p className="text-lg font-bold text-amber-900">{totalDaysAll}</p>
-                <p className="text-[10px] uppercase text-neutral-400">Arbeitstage</p>
-              </CardContent>
-            </Card>
-            <Card className="border-0 shadow-sm">
-              <CardContent className="p-3 text-center">
-                <p className="text-lg font-bold text-amber-900">{formatHours(totalHoursAll)}</p>
-                <p className="text-[10px] uppercase text-neutral-400">Stunden</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Per-employee breakdown */}
-          {report.length === 0 ? (
-            <p className="py-10 text-center text-sm text-neutral-400">
-              Keine Einträge für {getMonthName(month)} {year}.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {report.map((r) => {
-                const avgHours = r.workDays > 0 ? r.totalHours / r.workDays : 0;
-                return (
-                  <Card key={r.employee.id} className="border border-amber-100 shadow-sm">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400 text-xs font-bold text-amber-900">
-                            {r.employee.first_name[0]}{r.employee.last_name[0]}
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-amber-900">
-                              {r.employee.first_name} {r.employee.last_name}
-                            </p>
-                            <Badge className={`text-[10px] ${EMPLOYMENT_BADGE_COLORS[r.employee.employment_type]}`}>
-                              {r.employee.employment_type}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-amber-900">{formatHours(r.totalHours)}</p>
-                          <p className="text-[10px] text-neutral-400">Std.</p>
-                        </div>
-                      </div>
-                      <div className="mt-3 flex gap-4 border-t border-amber-50 pt-2">
-                        <div>
-                          <span className="text-[10px] uppercase text-neutral-400">Tage</span>
-                          <p className="text-sm font-semibold text-amber-900">{r.workDays}</p>
-                        </div>
-                        <div>
-                          <span className="text-[10px] uppercase text-neutral-400">Ø pro Tag</span>
-                          <p className="text-sm font-semibold text-amber-900">{formatHours(avgHours)}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Employees without entries */}
-          {employeesWithout.length > 0 && (
-            <div>
-              <p className="mb-2 text-xs font-medium uppercase text-neutral-400 px-1">Ohne Einträge</p>
-              <div className="flex flex-wrap gap-2">
-                {employeesWithout.map((emp) => (
-                  <div key={emp.id} className="flex items-center gap-2 rounded-lg bg-neutral-50 px-3 py-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-200 text-[10px] font-bold text-neutral-500">
-                      {emp.first_name[0]}{emp.last_name[0]}
-                    </div>
-                    <span className="text-xs text-neutral-500">{emp.first_name} {emp.last_name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-    </div>
+    <UebersichtPanel
+      report={report}
+      absences={absences}
+      employees={employees}
+      month={month}
+      year={year}
+      onMonthChange={(m, y) => { setMonth(m); setYear(y); }}
+      loading={loading || absLoading}
+    />
   );
 }
 
