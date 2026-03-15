@@ -2,6 +2,7 @@
 
 import { useEmployees } from '@/hooks/useEmployees';
 import { useAbsences } from '@/hooks/useAbsences';
+import { useEntries } from '@/hooks/useEntries';
 import { EmployeeList } from '@/components/employees/EmployeeList';
 import { BUSINESS_NAME } from '@/lib/constants';
 import { format } from 'date-fns';
@@ -9,13 +10,14 @@ import { de } from 'date-fns/locale';
 import { UtensilsCrossed } from 'lucide-react';
 
 function getTodayLabel() {
-  return format(new Date(), "EEEE, d. MMMM yyyy", { locale: de });
+  return format(new Date(), 'EEEE, d. MMMM yyyy', { locale: de });
 }
 
 export default function HomePage() {
   const { employees, loading } = useEmployees();
   const today = format(new Date(), 'yyyy-MM-dd');
   const { absences: todayAbsences } = useAbsences({ date: today });
+  const { entries: todayEntries } = useEntries({ date: today });
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -51,7 +53,13 @@ export default function HomePage() {
         </div>
 
       </div>
-      <EmployeeList employees={employees} loading={loading} todayAbsences={todayAbsences} />
+
+      <EmployeeList
+        employees={employees}
+        loading={loading}
+        todayAbsences={todayAbsences}
+        todayEntries={todayEntries}
+      />
     </div>
   );
 }
