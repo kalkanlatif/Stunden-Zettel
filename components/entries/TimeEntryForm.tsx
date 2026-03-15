@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Plus, Save, AlertTriangle, CalendarDays, Coffee } from 'lucide-react';
+import { Plus, Save, AlertTriangle, Coffee } from 'lucide-react';
 import { TimeBlock } from '@/types';
 import { TimeBlockInput } from './TimeBlockInput';
+import { DatePicker } from './DatePicker';
 import { calculateTotalHours, hasOverlap, formatHours, calculatePauses, formatMinutes } from '@/lib/utils/time';
 import { MAX_TIME_BLOCKS, MAX_HOURS_PER_DAY } from '@/lib/constants';
 import { useToast } from '@/hooks/use-toast';
@@ -105,23 +106,7 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Date */}
-      <div
-        className="flex items-center gap-3 rounded-2xl border border-white/80 bg-white/60 px-4 py-3 shadow-sm backdrop-blur-xl"
-        style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
-      >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100">
-          <CalendarDays className="h-5 w-5 text-amber-600" />
-        </div>
-        <div className="flex-1">
-          <span className="block text-[9px] font-semibold uppercase tracking-wider text-neutral-400">Arbeitstag</span>
-          <input
-            type="date"
-            value={workDate}
-            onChange={(e) => setWorkDate(e.target.value)}
-            className="w-full border-0 bg-transparent p-0 text-sm font-bold text-amber-900 outline-none"
-          />
-        </div>
-      </div>
+      <DatePicker value={workDate} onChange={setWorkDate} />
 
       {/* Time blocks */}
       <div className="space-y-3">
