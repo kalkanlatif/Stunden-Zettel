@@ -1,14 +1,14 @@
 'use client';
 
-import { LayoutDashboard, ClipboardList, Users, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Users, BarChart3, Settings } from 'lucide-react';
 
-export type TabId = 'dashboard' | 'eintragen' | 'mitarbeiter' | 'berichte';
+export type TabId = 'dashboard' | 'mitarbeiter' | 'berichte' | 'einstellungen';
 
 const tabs: { id: TabId; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'eintragen', label: 'Eintragen', icon: ClipboardList },
   { id: 'mitarbeiter', label: 'Mitarbeiter', icon: Users },
   { id: 'berichte', label: 'Berichte', icon: BarChart3 },
+  { id: 'einstellungen', label: 'Einstellungen', icon: Settings },
 ];
 
 interface BottomTabBarProps {

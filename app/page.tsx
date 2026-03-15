@@ -7,13 +7,13 @@ import { BottomTabBar, type TabId } from '@/components/layout/BottomTabBar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CalendarDays, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, Users, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useEntries } from '@/hooks/useEntries';
 import { useAbsences } from '@/hooks/useAbsences';
 import { useMonthlyReport } from '@/hooks/useMonthlyReport';
 import { formatHours, formatTimeBlocks, getMonthName } from '@/lib/utils/time';
-import { EMPLOYMENT_BADGE_COLORS } from '@/lib/constants';
+import { EMPLOYMENT_BADGE_COLORS, BUSINESS_NAME } from '@/lib/constants';
 
 // Eintragen
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -31,21 +31,41 @@ import { ReportTable } from '@/components/admin/ReportTable';
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+
+  const handleSelectEmployee = (id: string) => {
+    setSelectedEmployeeId(id);
+  };
+
+  const handleBackToDashboard = () => {
+    setSelectedEmployeeId(null);
+  };
 
   return (
     <div className="mx-auto max-w-2xl pb-20">
-      {activeTab === 'dashboard' && <DashboardTab />}
-      {activeTab === 'eintragen' && <EintragenTab />}
+      {activeTab === 'dashboard' && !selectedEmployeeId && (
+        <DashboardTab onSelectEmployee={handleSelectEmployee} />
+      )}
+      {activeTab === 'dashboard' && selectedEmployeeId && (
+        <EintragenView employeeId={selectedEmployeeId} onBack={handleBackToDashboard} />
+      )}
       {activeTab === 'mitarbeiter' && <MitarbeiterTab />}
       {activeTab === 'berichte' && <BerichteTab />}
+      {activeTab === 'einstellungen' && <EinstellungenTab />}
 
-      <BottomTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomTabBar
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          if (tab !== 'dashboard') setSelectedEmployeeId(null);
+        }}
+      />
     </div>
   );
 }
 
 /* ─── Dashboard ─── */
-function DashboardTab() {
+function DashboardTab({ onSelectEmployee }: { onSelectEmployee: (id: string) => void }) {
   const { employees, loading: empLoading } = useEmployees(true);
   const now = new Date();
   const { entries } = useEntries({ month: now.getMonth() + 1, year: now.getFullYear() });
@@ -123,57 +143,57 @@ function DashboardTab() {
         </CardContent>
       </Card>
 
-      {/* Active Employees */}
-      <Card className="border-0 shadow-sm">
-        <CardContent className="p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <Users className="h-4 w-4 text-amber-500" />
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-400">Aktive Mitarbeiter</h2>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {activeEmployees.map((emp) => (
-              <div key={emp.id} className="flex items-center gap-2.5 rounded-xl bg-amber-50/50 px-3 py-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400 text-xs font-bold text-amber-900">
-                  {emp.first_name[0]}{emp.last_name[0]}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-amber-900">{emp.first_name} {emp.last_name}</p>
-                  <Badge className={`text-[10px] ${EMPLOYMENT_BADGE_COLORS[emp.employment_type]}`}>
-                    {emp.employment_type}
-                  </Badge>
-                </div>
+      {/* Employee Cards — clickable to open Eintragen */}
+      <div>
+        <div className="mb-3 flex items-center gap-2 px-1">
+          <Users className="h-4 w-4 text-amber-500" />
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-400">Stunden eintragen</h2>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {activeEmployees.map((emp) => (
+            <button
+              key={emp.id}
+              onClick={() => onSelectEmployee(emp.id)}
+              className="flex items-center gap-2.5 rounded-xl bg-white px-3 py-3 text-left shadow-sm border border-amber-100 transition-all hover:border-amber-300 hover:shadow-md active:scale-[0.98]"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400 text-xs font-bold text-amber-900">
+                {emp.first_name[0]}{emp.last_name[0]}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-amber-900">{emp.first_name} {emp.last_name}</p>
+                <Badge className={`text-[10px] ${EMPLOYMENT_BADGE_COLORS[emp.employment_type]}`}>
+                  {emp.employment_type}
+                </Badge>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-/* ─── Eintragen ─── */
-function EintragenTab() {
+/* ─── Eintragen View (shown when employee selected from dashboard) ─── */
+function EintragenView({ employeeId, onBack }: { employeeId: string; onBack: () => void }) {
   const { employees } = useEmployees();
-  const activeEmployees = employees.filter((e) => e.active);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
+  const employee = employees.find((e) => e.id === employeeId);
 
   const now = new Date();
   const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
   const [viewYear, setViewYear] = useState(now.getFullYear());
 
   const { entries, loading: entriesLoading, refresh } = useEntries({
-    employeeId: selectedEmployeeId || undefined,
+    employeeId,
     month: viewMonth,
     year: viewYear,
   });
 
   const { absences, refresh: refreshAbsences } = useAbsences({
-    employeeId: selectedEmployeeId || undefined,
+    employeeId,
     month: viewMonth,
     year: viewYear,
   });
 
-  const selectedEmployee = employees.find((e) => e.id === selectedEmployeeId);
   const isCurrentMonth = viewMonth === now.getMonth() + 1 && viewYear === now.getFullYear();
 
   const goToPrevMonth = () => {
@@ -194,9 +214,8 @@ function EintragenTab() {
     }
   };
 
-  // Missing days calculation
   let missingDays = 0;
-  if (isCurrentMonth && selectedEmployeeId) {
+  if (isCurrentMonth) {
     const recordedDates = entries.map((e) => e.work_date);
     for (let i = 5; i <= 7; i++) {
       const d = new Date();
@@ -208,73 +227,63 @@ function EintragenTab() {
     }
   }
 
+  if (!employee) {
+    return (
+      <div className="py-20 text-center">
+        <p className="text-neutral-400">Mitarbeiter nicht gefunden.</p>
+        <button onClick={onBack} className="mt-3 text-sm text-amber-600 underline">
+          Zurück
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
-      <h1 className="text-xl font-bold text-amber-900">Eintragen</h1>
+      {/* Back button + Employee info */}
+      <button
+        onClick={onBack}
+        className="inline-flex items-center gap-1 text-sm text-neutral-400 hover:text-amber-600 transition-colors"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Zurück
+      </button>
 
-      {/* Employee dropdown */}
-      <div>
-        <Label className="text-xs text-neutral-500">Mitarbeiter auswählen</Label>
-        <Select value={selectedEmployeeId} onValueChange={setSelectedEmployeeId}>
-          <SelectTrigger className="mt-1">
-            <SelectValue placeholder="Mitarbeiter wählen..." />
-          </SelectTrigger>
-          <SelectContent>
-            {activeEmployees.map((emp) => (
-              <SelectItem key={emp.id} value={emp.id}>
-                {emp.first_name} {emp.last_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400 text-sm font-bold text-amber-900">
+          {employee.first_name[0]}{employee.last_name[0]}
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-amber-900">
+            {employee.first_name} {employee.last_name}
+          </h2>
+          <Badge className={`text-[11px] ${EMPLOYMENT_BADGE_COLORS[employee.employment_type]}`}>
+            {employee.employment_type}
+          </Badge>
+        </div>
       </div>
 
-      {selectedEmployee && (
-        <>
-          {/* Employee info */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-400 text-sm font-bold text-amber-900">
-              {selectedEmployee.first_name[0]}{selectedEmployee.last_name[0]}
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-amber-900">
-                {selectedEmployee.first_name} {selectedEmployee.last_name}
-              </h2>
-              <Badge className={`text-[11px] ${EMPLOYMENT_BADGE_COLORS[selectedEmployee.employment_type]}`}>
-                {selectedEmployee.employment_type}
-              </Badge>
-            </div>
-          </div>
+      {/* Time entry form */}
+      <TimeEntryForm employeeId={employeeId} onSaved={refresh} />
 
-          {/* Time entry form */}
-          <TimeEntryForm employeeId={selectedEmployeeId} onSaved={refresh} />
+      {/* Absence form */}
+      <AbsenceForm employeeId={employeeId} absences={absences} onSaved={refreshAbsences} />
 
-          {/* Absence form */}
-          <AbsenceForm employeeId={selectedEmployeeId} absences={absences} onSaved={refreshAbsences} />
+      {/* Month navigation */}
+      <div className="flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5">
+        <Button variant="ghost" size="icon" onClick={goToPrevMonth} className="h-8 w-8 text-amber-600 hover:bg-amber-100 hover:text-amber-800">
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="text-sm font-semibold text-amber-900">
+          {getMonthName(viewMonth)} {viewYear}
+        </span>
+        <Button variant="ghost" size="icon" onClick={goToNextMonth} className="h-8 w-8 text-amber-600 hover:bg-amber-100 hover:text-amber-800">
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
 
-          {/* Month navigation */}
-          <div className="flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5">
-            <Button variant="ghost" size="icon" onClick={goToPrevMonth} className="h-8 w-8 text-amber-600 hover:bg-amber-100 hover:text-amber-800">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm font-semibold text-amber-900">
-              {getMonthName(viewMonth)} {viewYear}
-            </span>
-            <Button variant="ghost" size="icon" onClick={goToNextMonth} className="h-8 w-8 text-amber-600 hover:bg-amber-100 hover:text-amber-800">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Monthly overview */}
-          <MonthlyOverview entries={entries} loading={entriesLoading} missingDays={missingDays} />
-        </>
-      )}
-
-      {!selectedEmployeeId && (
-        <div className="py-12 text-center">
-          <p className="text-sm text-neutral-400">Wähle einen Mitarbeiter, um Stunden einzutragen.</p>
-        </div>
-      )}
+      {/* Monthly overview */}
+      <MonthlyOverview entries={entries} loading={entriesLoading} missingDays={missingDays} />
     </div>
   );
 }
@@ -353,6 +362,34 @@ function BerichteTab() {
       ) : (
         <ReportTable report={report} month={reportMonth} year={reportYear} />
       )}
+    </div>
+  );
+}
+
+/* ─── Einstellungen ─── */
+function EinstellungenTab() {
+  return (
+    <div className="space-y-5">
+      <h1 className="text-xl font-bold text-amber-900">Einstellungen</h1>
+
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-5 space-y-4">
+          <div>
+            <h3 className="text-sm font-semibold text-amber-900">Betrieb</h3>
+            <p className="text-sm text-neutral-500 mt-1">{BUSINESS_NAME}</p>
+          </div>
+          <div className="border-t border-amber-100 pt-4">
+            <h3 className="text-sm font-semibold text-amber-900">Gesetzliche Vorgaben</h3>
+            <p className="text-xs text-neutral-400 mt-1">
+              Arbeitszeiterfassung gem. § 17 MiLoG · Aufbewahrungspflicht: mind. 2 Jahre
+            </p>
+          </div>
+          <div className="border-t border-amber-100 pt-4">
+            <h3 className="text-sm font-semibold text-amber-900">Version</h3>
+            <p className="text-xs text-neutral-400 mt-1">Kalkan Stundenzettel v1.0</p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
