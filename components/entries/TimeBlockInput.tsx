@@ -1,7 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { X, ArrowRight } from 'lucide-react';
+import { X } from 'lucide-react';
 import { TimeBlock } from '@/types';
 import { calculateHours, formatHours } from '@/lib/utils/time';
 import { TimePicker } from './TimePicker';
@@ -20,36 +19,52 @@ export function TimeBlockInput({ index, block, onChange, onRemove, canRemove }: 
     : 0;
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-neutral-50 px-3 py-1.5">
+    <div
+      className="relative rounded-2xl border border-white/80 bg-white/60 p-4 shadow-sm backdrop-blur-xl"
+      style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+    >
+      {/* Shift label + remove */}
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-400 text-[10px] font-bold text-white">
+            {index + 1}
+          </div>
+          <span className="text-xs font-semibold text-amber-900">Schicht {index + 1}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {hours > 0 && (
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-700">
+              {formatHours(hours)}
+            </span>
+          )}
+          {canRemove && (
+            <button
+              type="button"
+              onClick={() => onRemove(index)}
+              className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-50 text-red-400 transition-colors hover:bg-red-100 hover:text-red-500"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Time pickers */}
+      <div className="flex items-end gap-3">
         <TimePicker
           value={block.start}
           onChange={(v) => onChange(index, { ...block, start: v })}
-          placeholder="Von"
+          placeholder="00:00"
+          label="Von"
         />
-        <ArrowRight className="h-3 w-3 shrink-0 text-neutral-300" />
+        <div className="pb-3 text-neutral-300">→</div>
         <TimePicker
           value={block.end}
           onChange={(v) => onChange(index, { ...block, end: v })}
-          placeholder="Bis"
+          placeholder="00:00"
+          label="Bis"
         />
       </div>
-      {hours > 0 && (
-        <span className="min-w-[3.5rem] rounded-lg bg-amber-400/15 px-2 py-1.5 text-center text-xs font-bold text-amber-700">
-          {formatHours(hours)}
-        </span>
-      )}
-      {canRemove && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => onRemove(index)}
-          className="h-8 w-8 shrink-0 text-neutral-300 hover:text-red-500"
-        >
-          <X className="h-3.5 w-3.5" />
-        </Button>
-      )}
     </div>
   );
 }

@@ -1,11 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Plus, Save, AlertTriangle, CalendarDays, Coffee } from 'lucide-react';
 import { TimeBlock } from '@/types';
@@ -23,7 +20,10 @@ interface Props {
 export function TimeEntryForm({ employeeId, onSaved }: Props) {
   const today = format(new Date(), 'yyyy-MM-dd');
   const [workDate, setWorkDate] = useState(today);
-  const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([{ start: '', end: '' }]);
+  const [timeBlocks, setTimeBlocks] = useState<TimeBlock[]>([
+    { start: '', end: '' },
+    { start: '', end: '' },
+  ]);
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
@@ -92,7 +92,7 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
 
       toast({ title: 'Gespeichert', description: 'Arbeitszeit wurde erfolgreich eingetragen.' });
 
-      setTimeBlocks([{ start: '', end: '' }]);
+      setTimeBlocks([{ start: '', end: '' }, { start: '', end: '' }]);
       setNotes('');
       onSaved();
     } catch {
@@ -103,111 +103,140 @@ export function TimeEntryForm({ employeeId, onSaved }: Props) {
   };
 
   return (
-    <Card className="border-0 shadow-sm">
-      <CardContent className="p-5">
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Date */}
-          <div className="flex items-center gap-3 rounded-xl bg-neutral-50 px-3 py-2.5">
-            <CalendarDays className="h-4 w-4 shrink-0 text-amber-500" />
-            <div className="flex-1">
-              <span className="block text-[10px] font-medium uppercase text-neutral-400">Arbeitstag</span>
-              <Input
-                type="date"
-                value={workDate}
-                onChange={(e) => setWorkDate(e.target.value)}
-                className="h-8 border-0 bg-transparent px-0 text-sm font-medium shadow-none focus-visible:ring-0"
-              />
-            </div>
-          </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Date */}
+      <div
+        className="flex items-center gap-3 rounded-2xl border border-white/80 bg-white/60 px-4 py-3 shadow-sm backdrop-blur-xl"
+        style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+      >
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100">
+          <CalendarDays className="h-5 w-5 text-amber-600" />
+        </div>
+        <div className="flex-1">
+          <span className="block text-[9px] font-semibold uppercase tracking-wider text-neutral-400">Arbeitstag</span>
+          <input
+            type="date"
+            value={workDate}
+            onChange={(e) => setWorkDate(e.target.value)}
+            className="w-full border-0 bg-transparent p-0 text-sm font-bold text-amber-900 outline-none"
+          />
+        </div>
+      </div>
 
-          {/* Time blocks */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between px-1">
-              <Label className="text-[10px] font-medium uppercase text-neutral-400">Arbeitszeit</Label>
-              {timeBlocks.length > 1 && (
-                <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-medium text-neutral-500">
-                  {timeBlocks.length} Schichten
-                </span>
-              )}
-            </div>
-            {timeBlocks.map((block, i) => (
-              <TimeBlockInput
-                key={i}
-                index={i}
-                block={block}
-                onChange={handleBlockChange}
-                onRemove={handleBlockRemove}
-                canRemove={timeBlocks.length > 1}
-              />
-            ))}
-            {timeBlocks.length < MAX_TIME_BLOCKS && (
-              <button
-                type="button"
-                onClick={addBlock}
-                className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-neutral-200 py-2 text-[11px] font-medium text-neutral-400 transition-colors hover:border-amber-300 hover:text-amber-600"
-              >
-                <Plus className="h-3 w-3" />
-                Weitere Schicht
-              </button>
-            )}
-          </div>
+      {/* Time blocks */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <Label className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Arbeitszeit</Label>
+          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+            {timeBlocks.length} {timeBlocks.length === 1 ? 'Schicht' : 'Schichten'}
+          </span>
+        </div>
 
-          {/* Pause (auto-calculated) + Total */}
-          <div className="flex gap-3">
-            <div className="flex flex-1 items-start gap-2.5 rounded-xl bg-neutral-50 px-3 py-2.5">
-              <Coffee className="mt-0.5 h-4 w-4 shrink-0 text-neutral-300" />
-              <div className="flex-1 min-w-0">
-                <span className="block text-[10px] font-medium uppercase text-neutral-400">Pause (auto)</span>
-                {pauses.length === 0 ? (
-                  <span className="text-xs text-neutral-400">Keine Pause</span>
-                ) : (
-                  <div className="mt-0.5 space-y-0.5">
-                    {pauses.map((p, i) => (
-                      <div key={i} className="flex items-center gap-1.5 text-xs">
-                        <span className="text-neutral-500">{p.start}–{p.end}</span>
-                        <span className="rounded-full bg-amber-400/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
-                          {formatMinutes(p.minutes)}
+        {timeBlocks.map((block, i) => (
+          <div key={i}>
+            <TimeBlockInput
+              index={i}
+              block={block}
+              onChange={handleBlockChange}
+              onRemove={handleBlockRemove}
+              canRemove={timeBlocks.length > 1}
+            />
+            {/* Pause indicator between shifts */}
+            {i < timeBlocks.length - 1 && (() => {
+              const currentEnd = block.end;
+              const nextStart = timeBlocks[i + 1]?.start;
+              if (currentEnd && nextStart && nextStart > currentEnd) {
+                const [sh, sm] = currentEnd.split(':').map(Number);
+                const [eh, em] = nextStart.split(':').map(Number);
+                const pauseMin = (eh * 60 + em) - (sh * 60 + sm);
+                if (pauseMin > 0) {
+                  return (
+                    <div className="flex items-center gap-2 px-4 py-1.5">
+                      <div className="h-px flex-1 bg-amber-200" />
+                      <div className="flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1">
+                        <Coffee className="h-3 w-3 text-amber-500" />
+                        <span className="text-[10px] font-bold text-amber-600">
+                          Pause: {formatMinutes(pauseMin)}
                         </span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="flex flex-1 items-center justify-between rounded-xl bg-amber-400/15 px-4 py-2.5">
-              <span className="text-[10px] font-medium uppercase text-amber-700">Gesamt</span>
-              <span className="text-lg font-bold text-amber-900">
-                {formatHours(totalHours)}
-              </span>
-            </div>
+                      <div className="h-px flex-1 bg-amber-200" />
+                    </div>
+                  );
+                }
+              }
+              return (
+                <div className="flex items-center gap-2 px-4 py-1.5">
+                  <div className="h-px flex-1 bg-neutral-100" />
+                  <span className="text-[9px] text-neutral-300">Pause</span>
+                  <div className="h-px flex-1 bg-neutral-100" />
+                </div>
+              );
+            })()}
           </div>
+        ))}
 
-          {totalHours > MAX_HOURS_PER_DAY && (
-            <Alert variant="destructive" className="py-2">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              <AlertDescription className="text-xs">
-                Max. {MAX_HOURS_PER_DAY} Stunden pro Tag (ArbZG §3)
-              </AlertDescription>
-            </Alert>
+        {timeBlocks.length < MAX_TIME_BLOCKS && (
+          <button
+            type="button"
+            onClick={addBlock}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-neutral-200 py-3 text-xs font-semibold text-neutral-400 transition-all hover:border-amber-300 hover:text-amber-600 active:scale-[0.98]"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Weitere Schicht hinzufügen
+          </button>
+        )}
+      </div>
+
+      {/* Summary: Pause + Total */}
+      <div className="grid grid-cols-2 gap-3">
+        <div
+          className="rounded-2xl border border-white/80 bg-white/60 p-3.5 backdrop-blur-xl"
+          style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <Coffee className="h-3.5 w-3.5 text-amber-500" />
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-neutral-400">Pause</span>
+          </div>
+          {totalBreakMinutes > 0 ? (
+            <p className="text-lg font-bold text-amber-900">{formatMinutes(totalBreakMinutes)}</p>
+          ) : (
+            <p className="text-sm text-neutral-300">—</p>
           )}
+        </div>
+        <div className="rounded-2xl bg-gradient-to-br from-amber-400 to-amber-500 p-3.5 shadow-sm">
+          <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-800/60">Gesamt</span>
+          <p className="text-lg font-bold text-white">{formatHours(totalHours)}</p>
+        </div>
+      </div>
 
-          {/* Notes */}
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            maxLength={500}
-            placeholder="Bemerkung (optional)"
-            rows={2}
-            className="resize-none rounded-xl border-neutral-200 bg-neutral-50 text-sm placeholder:text-neutral-300"
-          />
+      {totalHours > MAX_HOURS_PER_DAY && (
+        <Alert variant="destructive" className="rounded-2xl py-2">
+          <AlertTriangle className="h-3.5 w-3.5" />
+          <AlertDescription className="text-xs">
+            Max. {MAX_HOURS_PER_DAY} Stunden pro Tag (ArbZG §3)
+          </AlertDescription>
+        </Alert>
+      )}
 
-          {/* Submit */}
-          <Button type="submit" disabled={saving} className="w-full rounded-xl bg-amber-500 py-5 text-sm font-semibold text-white hover:bg-amber-600">
-            <Save className="mr-2 h-4 w-4" />
-            {saving ? 'Wird gespeichert...' : 'Speichern'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      {/* Notes */}
+      <Textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        maxLength={500}
+        placeholder="Bemerkung (optional)"
+        rows={2}
+        className="resize-none rounded-2xl border-neutral-200 bg-white/60 text-sm placeholder:text-neutral-300 backdrop-blur-xl"
+      />
+
+      {/* Submit */}
+      <button
+        type="submit"
+        disabled={saving}
+        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 py-4 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-[0.98] disabled:opacity-50"
+      >
+        <Save className="h-4 w-4" />
+        {saving ? 'Wird gespeichert...' : 'Speichern'}
+      </button>
+    </form>
   );
 }
