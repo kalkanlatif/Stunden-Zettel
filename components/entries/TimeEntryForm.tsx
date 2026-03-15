@@ -274,7 +274,7 @@ export function TimeEntryForm({ employeeId, entries, absences, workDate, onWorkD
         className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-[0.98] disabled:opacity-50 ${
           isEditing
             ? 'bg-gradient-to-r from-blue-400 to-blue-500'
-            : 'bg-gradient-to-r from-amber-400 to-amber-500'
+            : 'bg-gradient-to-r from-green-500 to-green-600'
         }`}
       >
         {isEditing ? <Edit className="h-4 w-4" /> : <Save className="h-4 w-4" />}

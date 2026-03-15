@@ -111,7 +111,7 @@ export function AbsenceForm({ employeeId, date, existingEntry, absences, onSaved
         type="button"
         onClick={handleSubmit}
         disabled={saving}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-400 to-red-500 py-3 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-[0.98] disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-500 to-green-600 py-3 text-sm font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-[0.98] disabled:opacity-50"
       >
         <Plus className="h-4 w-4" />
         {saving ? 'Wird gespeichert...' : 'Abwesenheit eintragen'}
