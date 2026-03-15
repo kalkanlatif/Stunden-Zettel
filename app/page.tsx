@@ -146,29 +146,49 @@ function DashboardTab({
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-2">
-        <Card className="border border-amber-100 shadow-sm">
-          <CardContent className="p-3 text-center">
-            <Users className="mx-auto mb-1 h-4 w-4 text-amber-500" />
-            <p className="text-xl font-bold text-amber-900">{activeEmployees.length}</p>
-            <p className="text-[9px] uppercase text-neutral-400">Mitarbeiter</p>
-          </CardContent>
-        </Card>
-        <Card className="border border-amber-100 shadow-sm">
-          <CardContent className="p-3 text-center">
-            <CalendarDays className="mx-auto mb-1 h-4 w-4 text-amber-500" />
-            <p className="text-xl font-bold text-amber-900">{entries.length}</p>
-            <p className="text-[9px] uppercase text-neutral-400">Einträge</p>
-          </CardContent>
-        </Card>
-        <Card className="border border-amber-100 shadow-sm">
-          <CardContent className="p-3 text-center">
-            <Clock className="mx-auto mb-1 h-4 w-4 text-amber-500" />
-            <p className="text-xl font-bold text-amber-900">{formatHours(totalMonthHours).replace(' Std.', '')}</p>
-            <p className="text-[9px] uppercase text-neutral-400">Stunden</p>
-          </CardContent>
-        </Card>
-      </div>
+      {(() => {
+        // Employees who haven't logged today
+        const missingToday = activeEmployees.filter(
+          (e) => !todayWorkedIds.has(e.id) && !todayAbsentIds.has(e.id)
+        );
+        // Overtime entries this month (over 8 hours)
+        const overtimeEntries = entries.filter((e) => Number(e.total_hours) > 8);
+        const totalOvertimeHours = overtimeEntries.reduce(
+          (sum, e) => sum + (Number(e.total_hours) - 8), 0
+        );
+
+        return (
+          <div className="grid grid-cols-3 gap-2">
+            <Card className="border border-amber-100 shadow-sm">
+              <CardContent className="p-3 text-center">
+                <Users className="mx-auto mb-1 h-4 w-4 text-green-500" />
+                <p className="text-xl font-bold text-amber-900">
+                  {todayWorkedIds.size}<span className="text-sm text-neutral-300">/{activeEmployees.length}</span>
+                </p>
+                <p className="text-[9px] uppercase text-neutral-400">Heute aktiv</p>
+              </CardContent>
+            </Card>
+            <Card className="border border-amber-100 shadow-sm">
+              <CardContent className="p-3 text-center">
+                <AlertTriangle className={`mx-auto mb-1 h-4 w-4 ${missingToday.length > 0 ? 'text-orange-500' : 'text-green-500'}`} />
+                <p className={`text-xl font-bold ${missingToday.length > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                  {missingToday.length}
+                </p>
+                <p className="text-[9px] uppercase text-neutral-400">Ohne Eintrag</p>
+              </CardContent>
+            </Card>
+            <Card className="border border-amber-100 shadow-sm">
+              <CardContent className="p-3 text-center">
+                <TrendingUp className={`mx-auto mb-1 h-4 w-4 ${totalOvertimeHours > 0 ? 'text-red-500' : 'text-green-500'}`} />
+                <p className={`text-xl font-bold ${totalOvertimeHours > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  {totalOvertimeHours > 0 ? `+${totalOvertimeHours.toFixed(1).replace('.0', '')}` : '0'}
+                </p>
+                <p className="text-[9px] uppercase text-neutral-400">Überstunden</p>
+              </CardContent>
+            </Card>
+          </div>
+        );
+      })()}
 
       {/* Alerts / Hinweise */}
       {(lateEntries.length > 0 || highHourEntries.length > 0 || todayAbsences.length > 0) && (
