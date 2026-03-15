@@ -519,25 +519,32 @@ function EintragenView({ employeeId, onBack }: { employeeId: string; onBack: () 
 
 /* ─── Mitarbeiter View (sub-view of Dashboard) ─── */
 function MitarbeiterView({ onBack }: { onBack: () => void }) {
-  const { employees, loading, refresh } = useEmployees(true);
+  const { employees, loading, refresh } = useEmployees();
 
   if (loading) {
     return (
-      <div className="space-y-2">
-        {[...Array(5)].map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full rounded-lg" />
+      <div className="space-y-3">
+        {[...Array(4)].map((_, i) => (
+          <Skeleton key={i} className="h-16 w-full rounded-2xl" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
-      <button onClick={onBack} className="inline-flex items-center gap-1 text-sm text-neutral-400 hover:text-amber-600 transition-colors">
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Zurück
-      </button>
-      <h1 className="text-xl font-bold text-amber-900">Mitarbeiter verwalten</h1>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onBack}
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition-colors hover:bg-amber-100"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <div>
+          <h1 className="text-lg font-bold text-amber-900">Mitarbeiter</h1>
+          <p className="text-[11px] text-neutral-400">{employees.filter(e => e.active).length} aktive Mitarbeiter</p>
+        </div>
+      </div>
       <EmployeeTable employees={employees} onRefresh={refresh} />
     </div>
   );
