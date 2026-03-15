@@ -190,6 +190,97 @@ function DashboardTab({
         );
       })()}
 
+      {/* Employee Cards — clickable to open Eintragen */}
+      <div>
+        <div className="mb-3 flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-amber-500" />
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Stunden eintragen</h2>
+          </div>
+          <button
+            onClick={onOpenMitarbeiter}
+            className="flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition-all hover:bg-amber-100 hover:border-amber-400 active:scale-[0.97]"
+          >
+            <UserPlus className="h-3.5 w-3.5" />
+            Mitarbeiter verwalten
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {activeEmployees.map((emp) => {
+            const hasEntryToday = todayWorkedIds.has(emp.id);
+            const isAbsentToday = todayAbsentIds.has(emp.id);
+            const empEntries = entries.filter((e) => e.employee_id === emp.id);
+            const empMonthHours = empEntries.reduce((sum, e) => sum + Number(e.total_hours), 0);
+
+            return (
+              <button
+                key={emp.id}
+                onClick={() => onSelectEmployee(emp.id)}
+                className={`relative flex flex-col gap-3 rounded-2xl p-4 text-left transition-all hover:shadow-lg active:scale-[0.97] backdrop-blur-xl border ${
+                  hasEntryToday
+                    ? 'bg-green-50/70 border-green-200/60 shadow-green-100/50 shadow-md'
+                    : isAbsentToday
+                    ? 'bg-blue-50/70 border-blue-200/60 shadow-blue-100/50 shadow-md'
+                    : 'bg-white/60 border-white/80 shadow-md hover:border-amber-200'
+                }`}
+                style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+              >
+                {/* Top row: Avatar + Status */}
+                <div className="flex items-center justify-between">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-bold shadow-inner ${
+                    hasEntryToday
+                      ? 'bg-green-400/80 text-green-900'
+                      : isAbsentToday
+                      ? 'bg-blue-400/80 text-blue-900'
+                      : 'bg-gradient-to-br from-amber-300 to-amber-400 text-amber-900'
+                  }`}>
+                    {emp.first_name[0]}{emp.last_name[0]}
+                  </div>
+                  <div className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 ${
+                    hasEntryToday
+                      ? 'bg-green-100 text-green-700'
+                      : isAbsentToday
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-neutral-100 text-neutral-400'
+                  }`}>
+                    <div className={`h-1.5 w-1.5 rounded-full ${
+                      hasEntryToday ? 'bg-green-500' : isAbsentToday ? 'bg-blue-500' : 'bg-neutral-300'
+                    }`} />
+                    <span className="text-[9px] font-semibold">
+                      {hasEntryToday ? 'Aktiv' : isAbsentToday ? 'Abwesend' : 'Offen'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Name + Type */}
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-amber-900">{emp.first_name} {emp.last_name}</p>
+                  <Badge className={`mt-1 text-[9px] ${EMPLOYMENT_BADGE_COLORS[emp.employment_type]}`}>
+                    {emp.employment_type}
+                  </Badge>
+                </div>
+
+                {/* Monthly hours bar */}
+                <div className="mt-auto">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[9px] text-neutral-400 font-medium">{getMonthName(currentMonth)}</span>
+                    <span className="text-[10px] font-bold text-amber-800">{formatHours(empMonthHours)}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-neutral-100 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        hasEntryToday ? 'bg-green-400' : isAbsentToday ? 'bg-blue-400' : 'bg-amber-400'
+                      }`}
+                      style={{ width: `${Math.min((empMonthHours / 160) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Alerts / Hinweise */}
       {(lateEntries.length > 0 || highHourEntries.length > 0 || todayAbsences.length > 0) && (
         <div className="space-y-2">
@@ -328,60 +419,6 @@ function DashboardTab({
           </>
         );
       })()}
-
-      {/* Employee Cards — clickable to open Eintragen */}
-      <div>
-        <div className="mb-3 flex items-center justify-between px-1">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-amber-500" />
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Stunden eintragen</h2>
-          </div>
-          <button
-            onClick={onOpenMitarbeiter}
-            className="flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 transition-all hover:bg-amber-100 hover:border-amber-400 active:scale-[0.97]"
-          >
-            <UserPlus className="h-3.5 w-3.5" />
-            Mitarbeiter verwalten
-          </button>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          {activeEmployees.map((emp) => {
-            const hasEntryToday = todayWorkedIds.has(emp.id);
-            const isAbsentToday = todayAbsentIds.has(emp.id);
-            return (
-              <button
-                key={emp.id}
-                onClick={() => onSelectEmployee(emp.id)}
-                className={`relative flex items-center gap-2.5 rounded-xl bg-white px-3 py-3 text-left shadow-sm border transition-all hover:shadow-md active:scale-[0.98] ${
-                  hasEntryToday ? 'border-green-200' : isAbsentToday ? 'border-blue-200' : 'border-amber-100 hover:border-amber-300'
-                }`}
-              >
-                {/* Status dot */}
-                <div className={`absolute top-2 right-2 h-2 w-2 rounded-full ${
-                  hasEntryToday ? 'bg-green-400' : isAbsentToday ? 'bg-blue-400' : 'bg-neutral-200'
-                }`} />
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400 text-xs font-bold text-amber-900">
-                  {emp.first_name[0]}{emp.last_name[0]}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-amber-900">{emp.first_name} {emp.last_name}</p>
-                  <div className="flex items-center gap-1.5">
-                    <Badge className={`text-[9px] ${EMPLOYMENT_BADGE_COLORS[emp.employment_type]}`}>
-                      {emp.employment_type}
-                    </Badge>
-                    {hasEntryToday && (
-                      <span className="text-[9px] font-medium text-green-600">Eingetragen</span>
-                    )}
-                    {isAbsentToday && (
-                      <span className="text-[9px] font-medium text-blue-600">Abwesend</span>
-                    )}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 }
