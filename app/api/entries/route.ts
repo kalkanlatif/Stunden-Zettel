@@ -31,6 +31,10 @@ export async function GET(request: NextRequest) {
       const endYear = parseInt(month) === 12 ? parseInt(year) + 1 : parseInt(year);
       const endDate = `${endYear}-${String(endMonth).padStart(2, '0')}-01`;
       query = query.gte('work_date', startDate).lt('work_date', endDate);
+    } else if (year) {
+      const startDate = `${year}-01-01`;
+      const endDate = `${parseInt(year) + 1}-01-01`;
+      query = query.gte('work_date', startDate).lt('work_date', endDate);
     }
 
     const { data, error } = await query;

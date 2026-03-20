@@ -34,7 +34,8 @@ import { EinstellungenPanel } from '@/components/admin/EinstellungenPanel';
 import { useSettings } from '@/hooks/useSettings';
 
 // Berichte
-import { ReportTable } from '@/components/admin/ReportTable';
+import { YearlyReportGrid } from '@/components/admin/YearlyReportGrid';
+import { useYearlyReport } from '@/hooks/useYearlyReport';
 
 type DashboardView = 'main' | 'eintragen' | 'mitarbeiter';
 
@@ -579,58 +580,35 @@ function UebersichtTab() {
 /* ─── Berichte ─── */
 function BerichteTab() {
   const now = new Date();
-  const [reportMonth, setReportMonth] = useState(now.getMonth() + 1);
   const [reportYear, setReportYear] = useState(now.getFullYear());
-  const { report, loading } = useMonthlyReport(reportMonth, reportYear);
-  const { absences, loading: absLoading } = useAbsences({ month: reportMonth, year: reportYear });
-
-  const totalHours = report.reduce((s, r) => s + r.totalHours, 0);
-  const totalDays = report.reduce((s, r) => s + r.workDays, 0);
-
-  const goPrev = () => {
-    if (reportMonth === 1) { setReportMonth(12); setReportYear(reportYear - 1); }
-    else setReportMonth(reportMonth - 1);
-  };
-  const goNext = () => {
-    if (reportMonth === 12) { setReportMonth(1); setReportYear(reportYear + 1); }
-    else setReportMonth(reportMonth + 1);
-  };
+  const { reports, loading } = useYearlyReport(reportYear);
 
   return (
     <div className="space-y-4">
-      {/* Month navigation */}
+      {/* Year navigation */}
       <div
         className="rounded-2xl border border-white/80 bg-white/60 p-4 shadow-sm backdrop-blur-xl"
         style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
       >
         <div className="flex items-center justify-between">
-          <button type="button" onClick={goPrev} className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition-colors hover:bg-amber-100">
+          <button type="button" onClick={() => setReportYear((y) => y - 1)} className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition-colors hover:bg-amber-100">
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <div className="text-center">
-            <span className="text-sm font-bold text-amber-900">{getMonthName(reportMonth)} {reportYear}</span>
-            {!loading && (
-              <div className="mt-0.5 flex items-center justify-center gap-3">
-                <span className="text-[10px] text-neutral-400">{report.length} Mitarbeiter</span>
-                <span className="text-[10px] text-neutral-400">{totalDays} Tage</span>
-                <span className="text-[10px] font-semibold text-amber-700">{formatHours(totalHours)}</span>
-              </div>
-            )}
-          </div>
-          <button type="button" onClick={goNext} className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition-colors hover:bg-amber-100">
+          <span className="text-sm font-bold text-amber-900">{reportYear}</span>
+          <button type="button" onClick={() => setReportYear((y) => y + 1)} className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600 transition-colors hover:bg-amber-100">
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>
 
-      {loading || absLoading ? (
-        <div className="space-y-3">
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+      {loading ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {[...Array(12)].map((_, i) => (
+            <Skeleton key={i} className="h-40 w-full rounded-2xl" />
           ))}
         </div>
       ) : (
-        <ReportTable report={report} absences={absences} month={reportMonth} year={reportYear} />
+        <YearlyReportGrid reports={reports} year={reportYear} />
       )}
     </div>
   );

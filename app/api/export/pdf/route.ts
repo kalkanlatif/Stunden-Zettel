@@ -85,7 +85,8 @@ export async function GET(request: NextRequest) {
     }
     const buffer = Buffer.concat(chunks);
 
-    const filename = `Stundenzettel_${employee.last_name}_${employee.first_name}_${month}_${year}.pdf`;
+    const monthName = getMonthName(parseInt(month));
+    const filename = `${employee.first_name}_${monthName}_${year}.pdf`;
 
     return new NextResponse(buffer, {
       headers: {
